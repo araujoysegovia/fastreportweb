@@ -1,0 +1,753 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Report ScriptLanguage="CSharp" StartReportEvent="_StartReport" ReportInfo.Created="11/15/2012 11:44:12" ReportInfo.Modified="06/10/2019 15:25:19" ReportInfo.CreatorVersion="2019.3.0.0">
+  <ScriptText>using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Windows.Forms;
+using System.Drawing;
+using System.Data;
+using FastReport;
+using FastReport.Data;
+using FastReport.Dialog;
+using FastReport.Barcode;
+using FastReport.Table;
+using FastReport.Utils;
+
+namespace FastReport
+{
+  public class ReportScript
+  {
+    
+    String gerencia = &quot;&quot;;
+    string CadDescriTraCXC = &quot;&quot;;
+    string CadDescriTraCXP = &quot;&quot;;
+    string CadDescriTraCAJBCO = &quot;&quot;;
+    string CadenaDescritra = &quot;&quot;;
+  
+    
+    private void _StartReport(object sender, EventArgs e)
+    { 
+      //Config.ReportSettings.ShowProgress = false;
+      if(((String)Report.GetParameterValue(&quot;Impresora&quot;))==&quot;M&quot;) {
+        //quitarEstilos(Report.AllObjects);
+      }else {
+        //cambiarEstilos(((String)Report.GetParameterValue(&quot;Estilo&quot;))==&quot;0&quot;?0:1);
+      }
+    }   
+
+    private void Text10_BeforePrint(object sender, EventArgs e)
+    {
+      String Query_IDTIPDOC = ToString(Report.GetColumnValue(&quot;Query.IDTIPDOC&quot;));
+      String Query_IDCLIPRV = ToString(Report.GetColumnValue(&quot;Query.IDCLIPRV&quot;));
+      String Query_IndContabPrestamo = ToString(Report.GetColumnValue(&quot;Query.IndContabPrestamo&quot;));
+      String Query_CLIENTE = ToString(Report.GetColumnValue(&quot;Query.CLIENTE&quot;));
+
+      if(Query_IDTIPDOC == &quot;001&quot;){
+        if(Trim(Query_IDCLIPRV) != &quot;&quot;){
+          Text10.Text =  &quot; Cliente     : &quot;;
+        }else{
+          Text10.Text =  &quot; Tercero     : &quot;;
+        }
+      }else if(Query_IDTIPDOC == &quot;002&quot;){ 
+        Text10.Text =  &quot; Tercero     : &quot;;
+      }else if( Query_IDTIPDOC == &quot;003&quot; ){
+        if( Query_IndContabPrestamo == &quot;S&quot; ){
+          Text10.Text =  &quot; Cliente     : &quot;;// + Trim(Query_IDCLIPRV + &quot; &quot; + Query_CLIENTE);
+        }else if( Trim(Query_IDCLIPRV) != &quot;&quot;){
+          Text10.Text =  &quot; Proveedor   : &quot;;
+        }else{
+          Text10.Text =  &quot; Tercero     : &quot;;
+        }
+      }else if( Query_IDTIPDOC == &quot;004&quot; ){  
+        Text10.Text =  &quot; Cliente     : &quot;;
+      }else if( Query_IDTIPDOC == &quot;005&quot; ){  
+        Text10.Text =  &quot; Proveedor   : &quot;;
+      }else if( Query_IDTIPDOC == &quot;006&quot; ){  
+        Text10.Text =  &quot; Cliente     : &quot;;
+      }else if( Query_IDTIPDOC == &quot;007&quot; ){  
+        Text10.Text =  &quot; Cliente     : &quot;;
+      }else if( Query_IDTIPDOC == &quot;008&quot; ){
+        Text10.Text =  &quot; Tercero     : &quot;;
+      }else if( Query_IDTIPDOC == &quot;009&quot; ){  
+        Text10.Text =  &quot; Proveedor   : &quot; ;
+      }else if( Query_IDTIPDOC == &quot;010&quot; ){  
+        Text10.Text =  &quot; Proveedor   : &quot;;
+      }else if( Query_IDTIPDOC == &quot;011&quot; ){  
+        Text10.Text =  &quot; Proveedor   : &quot;;
+      }else if( Query_IDTIPDOC == &quot;012&quot; ){  
+        Text10.Text =  &quot; Tercero     : &quot;;
+      }else if( Query_IDTIPDOC == &quot;016&quot; ){  
+        Text10.Text =  &quot; Tercero     : &quot;;
+      }else if( Query_IDTIPDOC == &quot;018&quot; ){  
+        Text10.Text =  &quot; Tercero     : &quot;;
+      }else if( Query_IDTIPDOC == &quot;019&quot; ){  
+        Text10.Text =  &quot; Tercero     : &quot;;
+      }else if( Query_IDTIPDOC == &quot;020&quot; ){  
+        Text10.Text =  &quot; Tercero     : &quot;;
+      }else if( Query_IDTIPDOC == &quot;022&quot; ){  
+        Text10.Text =  &quot; Tercero     : &quot;;
+      }else if( Query_IDTIPDOC == &quot;023&quot; ){  
+        Text10.Text =  &quot; Tercero     : &quot;;
+      }else if( Query_IDTIPDOC == &quot;026&quot; ){ 
+        Text10.Text =  &quot; Tercero     : &quot;;
+      }else if( Query_IDTIPDOC == &quot;027&quot; ){  
+        Text10.Text =  &quot; Tercero     : &quot;;
+      }else if( Query_IDTIPDOC == &quot;029&quot; ){  
+        Text10.Text =  &quot; Tercero     : &quot;;
+      }else if( Query_IDTIPDOC == &quot;030&quot; ){ 
+        Text10.Text =  &quot; Cliente     : &quot;;
+      }else if( Query_IDTIPDOC == &quot;046&quot; ){  
+        Text10.Text =  &quot; Tercero     : &quot;;
+      }else if( Query_IDTIPDOC == &quot;047&quot; ){  
+        Text10.Text =  &quot; Tercero     : &quot;;
+      }else if( Query_IDTIPDOC == &quot;049&quot; ){  
+        Text10.Text =  &quot; Tercero     : &quot;;
+      }else if( Query_IDTIPDOC == &quot;050&quot; ){  
+        Text10.Text =  &quot; Proveedor   : &quot;;
+      }else if( Query_IDTIPDOC == &quot;051&quot; ){ 
+        Text10.Text =  &quot; Proveedor   : &quot;;
+      }else{
+        Text10.Text =  &quot; Tercero     : &quot;;
+      }
+      //MessageBox.Show(Query_IndContabPrestamo);
+    }
+
+    private void Text11_BeforePrint(object sender, EventArgs e)
+    {
+      String Query_IDTIPDOC = ToString(Report.GetColumnValue(&quot;Query.IDTIPDOC&quot;));
+      String Query_IDCLIPRV = ToString(Report.GetColumnValue(&quot;Query.IDCLIPRV&quot;));
+      String Query_IDTERCERO = ToString(Report.GetColumnValue(&quot;Query.IDTERCERO&quot;));
+      String Query_IndContabPrestamo = ToString(Report.GetColumnValue(&quot;Query.IndContabPrestamo&quot;));
+      
+      if( Query_IDTIPDOC == &quot;001&quot; ){
+        if(Trim(Query_IDCLIPRV) != &quot;&quot;){
+          Text11.Text = Query_IDCLIPRV;
+        }else{
+          Text11.Text = Query_IDTERCERO;
+        }
+      }else if( Query_IDTIPDOC == &quot;002&quot; ){ 
+        Text11.Text = Query_IDTERCERO;
+      }else if( Query_IDTIPDOC == &quot;003&quot; ){
+        if( Query_IndContabPrestamo == &quot;S&quot; ){
+          Text11.Text = Query_IDCLIPRV;
+        }else if( Trim(Query_IDCLIPRV) != &quot;&quot;){
+          Text11.Text = Query_IDCLIPRV;
+        }else{
+          Text11.Text = Query_IDTERCERO;
+        }
+      }else if( Query_IDTIPDOC == &quot;004&quot; ){
+        Text11.Text = Query_IDCLIPRV;
+      }else if( Query_IDTIPDOC == &quot;005&quot; ){ 
+        Text11.Text = Query_IDCLIPRV;
+      }else if( Query_IDTIPDOC == &quot;006&quot; ){
+        Text11.Text = Query_IDCLIPRV;
+      }else if( Query_IDTIPDOC == &quot;007&quot; ){
+        Text11.Text = Query_IDCLIPRV;
+      }else if( Query_IDTIPDOC == &quot;008&quot; ){ 
+        Text11.Text = Query_IDTERCERO;
+      }else if( Query_IDTIPDOC == &quot;009&quot; ){ 
+        Text11.Text = Query_IDCLIPRV;
+      }else if( Query_IDTIPDOC == &quot;010&quot; ){
+        Text11.Text = Query_IDTERCERO;
+      }else if( Query_IDTIPDOC == &quot;011&quot; ){ 
+        Text11.Text = Query_IDCLIPRV;
+      }else if( Query_IDTIPDOC == &quot;012&quot; ){ 
+        Text11.Text = Query_IDTERCERO;
+      }else if( Query_IDTIPDOC == &quot;016&quot; ){
+        Text11.Text = Query_IDTERCERO;
+      }else if( Query_IDTIPDOC == &quot;018&quot; ){
+        Text11.Text = Query_IDTERCERO;
+      }else if( Query_IDTIPDOC == &quot;019&quot; ){ 
+        Text11.Text = Query_IDTERCERO;
+      }else if( Query_IDTIPDOC == &quot;020&quot; ){ 
+        Text11.Text = Query_IDTERCERO;
+      }else if( Query_IDTIPDOC == &quot;022&quot; ){ 
+        Text11.Text = Query_IDTERCERO;
+      }else if( Query_IDTIPDOC == &quot;023&quot; ){
+        Text11.Text = Query_IDTERCERO;
+      }else if( Query_IDTIPDOC == &quot;026&quot; ){
+        Text11.Text = Query_IDTERCERO;
+      }else if( Query_IDTIPDOC == &quot;027&quot; ){ 
+        Text11.Text = Query_IDTERCERO;
+      }else if( Query_IDTIPDOC == &quot;029&quot; ){ 
+        Text11.Text = Query_IDTERCERO;
+      }else if( Query_IDTIPDOC == &quot;030&quot; ){
+        Text11.Text = Query_IDCLIPRV;
+      }else if( Query_IDTIPDOC == &quot;046&quot; ){
+        Text11.Text = Query_IDTERCERO;
+      }else if( Query_IDTIPDOC == &quot;047&quot; ){
+        Text11.Text = Query_IDTERCERO;
+      }else if( Query_IDTIPDOC == &quot;049&quot; ){
+        Text11.Text = Query_IDTERCERO;
+      }else if( Query_IDTIPDOC == &quot;050&quot; ){
+        Text11.Text = Query_IDCLIPRV;
+      }else if( Query_IDTIPDOC == &quot;051&quot; ){
+        Text11.Text = Query_IDCLIPRV;
+      }else{ 
+        Text11.Text = Query_IDTERCERO;
+      }
+    }
+
+    private void Text12_BeforePrint(object sender, EventArgs e)
+    {
+      String Query_IDTIPDOC = ToString(Report.GetColumnValue(&quot;Query.IDTIPDOC&quot;));
+      String Query_IDCLIPRV = ToString(Report.GetColumnValue(&quot;Query.IDCLIPRV&quot;));
+      String Query_IDTERCERO = ToString(Report.GetColumnValue(&quot;Query.IDTERCERO&quot;));
+      String Query_IndContabPrestamo = ToString(Report.GetColumnValue(&quot;Query.IndContabPrestamo&quot;));
+      String Query_NOMBRETER = ToString(Report.GetColumnValue(&quot;Query.NOMBRETER&quot;));
+
+      if( (Query_IDTIPDOC == &quot;001&quot; &amp;&amp; Trim(Query_IDCLIPRV) != &quot;&quot;) ||
+        (Query_IDTIPDOC == &quot;003&quot; &amp;&amp; Query_IndContabPrestamo == &quot;S&quot;) ||
+        (Query_IDTIPDOC == &quot;004&quot; || Query_IDTIPDOC == &quot;005&quot;) ||
+        (Query_IDTIPDOC == &quot;006&quot; || Query_IDTIPDOC == &quot;007&quot;) ||
+        (Query_IDTIPDOC == &quot;009&quot; || Query_IDTIPDOC == &quot;010&quot;) ||
+        (Query_IDTIPDOC == &quot;011&quot; || Query_IDTIPDOC == &quot;030&quot;) ||
+        (Query_IDTIPDOC == &quot;050&quot; || Query_IDTIPDOC == &quot;051&quot;)
+      ){
+        if( Trim(Query_IDTERCERO) != Trim(Query_IDCLIPRV) ){
+          Text12.Text = &quot;&lt;b&gt;NIT : &lt;/b&gt;&quot; + Query_IDTERCERO  + &quot; &quot; + Query_NOMBRETER;
+        }else{
+          Text12.Text = &quot;&quot;;
+        }
+      }else{
+        Text12.Text = &quot;&quot;;
+      }
+
+    }
+
+    private void Text14_BeforePrint(object sender, EventArgs e)
+    {
+      String Query_IDTIPDOC = ToString(Report.GetColumnValue(&quot;Query.IDTIPDOC&quot;));
+      String Query_IDCLIPRV = ToString(Report.GetColumnValue(&quot;Query.IDCLIPRV&quot;));
+      String Query_TerceroCompleto = ToString(Report.GetColumnValue(&quot;Query.TerceroCompleto&quot;));
+      String Query_ClienteCompleto = ToString(Report.GetColumnValue(&quot;Query.ClienteCompleto&quot;));
+      String Query_ProveedorCompleto = ToString(Report.GetColumnValue(&quot;Query.ProveedorCompleto&quot;));
+      String Query_IndContabPrestamo = ToString(Report.GetColumnValue(&quot;Query.IndContabPrestamo&quot;));
+
+      if( Query_IDTIPDOC == &quot;001&quot; ){ 
+        if( Trim(Query_IDCLIPRV) != &quot;&quot;){
+          Text14.Text = Query_ClienteCompleto;
+        }else{
+          Text14.Text = Query_TerceroCompleto;
+        } 
+      }else if( Query_IDTIPDOC == &quot;002&quot; ){  
+        Text14.Text = Query_TerceroCompleto;
+      }else if( Query_IDTIPDOC == &quot;003&quot; ){  
+        if( Query_IndContabPrestamo == &quot;S&quot; ){
+          Text14.Text = Query_ClienteCompleto;
+        }else{
+          if( Trim(Query_IDCLIPRV) != &quot;&quot; ){
+            Text14.Text = Query_ProveedorCompleto;
+          }else{
+            Text14.Text = Query_TerceroCompleto;
+          }
+        }
+      }else if( Query_IDTIPDOC == &quot;004&quot; ){  
+        Text14.Text = Query_ClienteCompleto ;
+      }else if( Query_IDTIPDOC == &quot;005&quot; ){   
+        Text14.Text = Query_ProveedorCompleto ;
+      }else if( Query_IDTIPDOC == &quot;006&quot; ){   
+        Text14.Text = Query_ClienteCompleto ;
+      }else if( Query_IDTIPDOC == &quot;007&quot; ){
+        Text14.Text = Query_ClienteCompleto;
+      }else if( Query_IDTIPDOC== &quot;008&quot; ){  
+        Text14.Text = Query_TerceroCompleto;
+      }else if( Query_IDTIPDOC== &quot;009&quot; ){   
+        Text14.Text = Query_ProveedorCompleto;
+      }else if( Query_IDTIPDOC== &quot;010&quot; ){
+        Text14.Text = Query_TerceroCompleto;
+      }else if( Query_IDTIPDOC== &quot;011&quot; ){   
+        Text14.Text = Query_ProveedorCompleto;
+      }else if( Query_IDTIPDOC== &quot;012&quot; ){
+        Text14.Text = Query_TerceroCompleto;
+      }else if( Query_IDTIPDOC== &quot;016&quot; ){
+        Text14.Text = Query_TerceroCompleto;
+      }else if( Query_IDTIPDOC== &quot;018&quot; ){
+        Text14.Text = Query_TerceroCompleto;
+      }else if( Query_IDTIPDOC== &quot;019&quot; ){
+        Text14.Text = Query_TerceroCompleto;
+      }else if( Query_IDTIPDOC== &quot;020&quot; ){  
+        Text14.Text = Query_TerceroCompleto;
+      }else if( Query_IDTIPDOC== &quot;022&quot; ){
+        Text14.Text = Query_TerceroCompleto;
+      }else if( Query_IDTIPDOC== &quot;023&quot; ){
+        Text14.Text = Query_TerceroCompleto;
+      }else if( Query_IDTIPDOC== &quot;026&quot; ){
+        Text14.Text = Query_TerceroCompleto;
+      }else if( Query_IDTIPDOC== &quot;027&quot; ){
+        Text14.Text = Query_ProveedorCompleto;
+      }else if( Query_IDTIPDOC== &quot;029&quot; ){
+        Text14.Text = Query_TerceroCompleto;
+      }else if( Query_IDTIPDOC== &quot;030&quot; ){
+        Text14.Text = Query_ClienteCompleto;
+      }else if( Query_IDTIPDOC== &quot;046&quot; ){
+        Text14.Text = Query_TerceroCompleto;
+      }else if( Query_IDTIPDOC== &quot;047&quot; ){
+        Text14.Text = Query_TerceroCompleto;
+      }else if( Query_IDTIPDOC== &quot;049&quot; ){
+        Text14.Text = Query_TerceroCompleto;
+      }else if( Query_IDTIPDOC== &quot;050&quot; ){
+        Text14.Text = Query_ProveedorCompleto;
+      }else if( Query_IDTIPDOC== &quot;051&quot; ){
+        Text14.Text = Query_ProveedorCompleto;
+      }else{
+        Text14.Text = Query_TerceroCompleto;
+      }
+    } 
+    
+    private bool mostrarDatosGerencia(){
+      String Query_GerenciaGer = ToString(Report.GetColumnValue(&quot;Query.GerenciaGer&quot;));
+      return ( Query_GerenciaGer != &quot;&quot; );
+    }
+
+    private void Text16_BeforePrint(object sender, EventArgs e)
+    {
+      String Query_GerenciaGer = ToString(Report.GetColumnValue(&quot;Query.GerenciaGer&quot;));
+      String Query_TipoCuentaGer = ToString(Report.GetColumnValue(&quot;Query.TipoCuentaGer&quot;));
+      String Query_NombreBancoGer = ToString(Report.GetColumnValue(&quot;Query.NombreBancoGer&quot;));
+      String Query_CuentaGer = ToString(Report.GetColumnValue(&quot;Query.CuentaGer&quot;));
+      String Query_DESCDCTO = ToString(Report.GetColumnValue(&quot;Query.DESCDCTO&quot;));
+
+      if( Query_GerenciaGer != &quot;&quot; ){
+        gerencia = &quot; Gerencia    : &quot; +  Query_GerenciaGer + &quot;  Banco: &quot; +  Query_NombreBancoGer + &quot;   Cuenta:&quot; + Query_TipoCuentaGer + &quot;   &quot; + Query_CuentaGer+ &quot; &quot;;
+      }else{
+        gerencia = &quot;&quot;;
+      }
+      Text16.Text = gerencia + &quot;Por Concepto:  &quot; + Query_DESCDCTO + &quot;&quot;;
+    }
+
+    private void Text25_BeforePrint(object sender, EventArgs e)
+    {
+      String Query_AUXIAUX = ToString(Report.GetColumnValue(&quot;Query.AUXIAUX&quot;));
+      String Query_CLIPRV = ToString(Report.GetColumnValue(&quot;Query.CLIPRV&quot;));
+      String Query_IDCENCO = ToString(Report.GetColumnValue(&quot;Query.IDCENCO&quot;));
+      String Query_NITTRA = ToString(Report.GetColumnValue(&quot;Query.NITTRA&quot;));
+      
+      if( Trim(Query_AUXIAUX) != &quot;&quot; ){
+        Text25.Text = Query_AUXIAUX;
+      }else{
+        if( Trim(Query_CLIPRV) != &quot;&quot; ){
+          Text25.Text = Query_CLIPRV;
+        }else{
+          if( Trim(Query_IDCENCO) != &quot;&quot; ){
+            Text25.Text = Query_IDCENCO;
+          }else{
+            if( Trim(Query_NITTRA) != &quot;&quot; ){
+              Text25.Text = Query_NITTRA;
+            }else{
+              Text25.Text = &quot;&quot;;
+            }
+          }
+        }
+      }
+    }
+
+    private void Text26_BeforePrint(object sender, EventArgs e)
+    {
+      String Query_INDCPITRA = ToString(Report.GetColumnValue(&quot;Query.INDCPITRA&quot;));
+      String Query_IDTIPDOC = ToString(Report.GetColumnValue(&quot;Query.IDTIPDOC&quot;));
+      String Query_TIPOFAC = ToString(Report.GetColumnValue(&quot;Query.TIPOFAC&quot;));
+      String Query_DESCRITRA = ToString(Report.GetColumnValue(&quot;Query.DESCRITRA&quot;));
+      String Query_NUMEFAC = ToString(Report.GetColumnValue(&quot;Query.NUMEFAC&quot;));
+      String Query_VENCEFAC = ToString(Report.GetColumnValue(&quot;Query.VENCEFAC&quot;));
+      String Query_REFEFAC = ToString(Report.GetColumnValue(&quot;Query.REFEFAC&quot;));
+      String Query_IDBANCO = ToString(Report.GetColumnValue(&quot;Query.IDBANCO&quot;));
+      String Query_IDPLAZA = ToString(Report.GetColumnValue(&quot;Query.IDPLAZA&quot;));
+      Decimal Query_PORRETETRA = ToDecimal(Report.GetColumnValue(&quot;Query.PORRETETRA&quot;));
+      Decimal Query_BASERETETRA = ToDecimal(Report.GetColumnValue(&quot;Query.BASERETETRA&quot;));
+      /**** Mjunco Req. 29214 2016-02-16 ***/
+      String Query_MuestraDescriTra = ToString(Report.GetColumnValue(&quot;Query.MuestraDescrCta&quot;));
+       /*
+         No mantener
+         En Cuentas de Caja - CxC y CxP
+         Solo en Cuentas de Caja
+         Solo en CxC
+         Solo en CxP
+         En Cuentas de Caja y CxC
+         En Cuentas de Caja y CxP
+         En CxC y CxP   
+        */
+      switch (Query_MuestraDescriTra){
+       case &quot;No mantener&quot;:
+        CadDescriTraCXC=Query_TIPOFAC + &quot; &quot; + Query_NUMEFAC + &quot; &quot; + Query_VENCEFAC + &quot; &quot; + Query_REFEFAC;   
+        CadDescriTraCXP=Query_TIPOFAC + &quot; &quot; + Query_NUMEFAC + &quot; &quot; + Query_VENCEFAC + &quot; &quot; + Query_REFEFAC;   
+        CadDescriTraCAJBCO=Query_TIPOFAC + &quot; &quot; + Query_NUMEFAC + &quot; &quot; + Query_VENCEFAC + &quot; &quot; + Query_REFEFAC + &quot; &quot; + Query_IDBANCO + &quot; &quot; + Query_IDPLAZA;      
+        break;
+       case &quot;En Cuentas de Caja - CxC y CxP&quot;:
+        CadDescriTraCXC=Query_DESCRITRA;
+        CadDescriTraCXP=Query_DESCRITRA;
+        CadDescriTraCAJBCO=Query_DESCRITRA;
+        break;
+       case  &quot;Solo en Cuentas de Caja&quot;:
+        CadDescriTraCXC=Query_TIPOFAC + &quot; &quot; + Query_NUMEFAC + &quot; &quot; + Query_VENCEFAC + &quot; &quot; + Query_REFEFAC; 
+        CadDescriTraCXP=Query_TIPOFAC + &quot; &quot; + Query_NUMEFAC + &quot; &quot; + Query_VENCEFAC + &quot; &quot; + Query_REFEFAC;
+        CadDescriTraCAJBCO=Query_DESCRITRA;
+        break;
+       case &quot;Solo en CxC&quot;:
+        CadDescriTraCXC=Query_DESCRITRA;
+        CadDescriTraCXP=Query_TIPOFAC + &quot; &quot; + Query_NUMEFAC + &quot; &quot; + Query_VENCEFAC + &quot; &quot; + Query_REFEFAC;
+        CadDescriTraCAJBCO=Query_TIPOFAC + &quot; &quot; + Query_NUMEFAC + &quot; &quot; + Query_VENCEFAC + &quot; &quot; + Query_REFEFAC + &quot; &quot; + Query_IDBANCO + &quot; &quot; + Query_IDPLAZA;      
+        break;
+       case &quot;Solo en CxP&quot;:
+        CadDescriTraCXC=Query_TIPOFAC + &quot; &quot; + Query_NUMEFAC + &quot; &quot; + Query_VENCEFAC + &quot; &quot; + Query_REFEFAC;
+        CadDescriTraCXP=Query_DESCRITRA;
+        CadDescriTraCAJBCO=Query_TIPOFAC + &quot; &quot; + Query_NUMEFAC + &quot; &quot; + Query_VENCEFAC + &quot; &quot; + Query_REFEFAC + &quot; &quot; + Query_IDBANCO + &quot; &quot; + Query_IDPLAZA;      
+        break;
+       case &quot;En Cuentas de Caja y CxC&quot;:
+        CadDescriTraCXC=Query_DESCRITRA;
+        CadDescriTraCXP=Query_TIPOFAC + &quot; &quot; + Query_NUMEFAC + &quot; &quot; + Query_VENCEFAC + &quot; &quot; + Query_REFEFAC;
+        CadDescriTraCAJBCO=Query_DESCRITRA;
+        break;
+       case &quot;En Cuentas de Caja y CxP&quot;:
+        CadDescriTraCXC=Query_TIPOFAC + &quot; &quot; + Query_NUMEFAC + &quot; &quot; + Query_VENCEFAC + &quot; &quot; + Query_REFEFAC;
+        CadDescriTraCXP=Query_DESCRITRA;
+        CadDescriTraCAJBCO=Query_DESCRITRA;
+        break;
+       case &quot;En CxC y CxP&quot;:
+        CadDescriTraCXC=Query_DESCRITRA;
+        CadDescriTraCXP=Query_DESCRITRA;
+        CadDescriTraCAJBCO=Query_TIPOFAC + &quot; &quot; + Query_NUMEFAC + &quot; &quot; + Query_VENCEFAC + &quot; &quot; + Query_REFEFAC + &quot; &quot; + Query_IDBANCO + &quot; &quot; + Query_IDPLAZA;      
+        break;
+      }
+      
+      /*************************************/
+      
+     if( Query_INDCPITRA == &quot;2&quot; || Query_INDCPITRA == &quot;3&quot; || Query_INDCPITRA == &quot;6&quot; ){
+      if( Query_IDTIPDOC == &quot;003&quot; &amp;&amp; Query_TIPOFAC == &quot;EFE&quot; ){
+       Text26.Text = Query_DESCRITRA;
+      }else{
+       if(  Query_INDCPITRA == &quot;2&quot;){
+        Text26.Text = CadDescriTraCXC;//Query_TIPOFAC + &quot; &quot; + Query_NUMEFAC + &quot; &quot; + Query_VENCEFAC + &quot; &quot; + Query_REFEFAC;
+       }else{
+        if(  Query_INDCPITRA == &quot;3&quot; ){
+         Text26.Text = CadDescriTraCXP;//Query_TIPOFAC + &quot; &quot; + Query_NUMEFAC + &quot; &quot; + Query_VENCEFAC + &quot; &quot; + Query_REFEFAC;
+        }else{
+         Text26.Text = CadDescriTraCAJBCO;//Query_TIPOFAC + &quot; &quot; + Query_NUMEFAC + &quot; &quot; + Query_VENCEFAC + &quot; &quot; + Query_REFEFAC + &quot; &quot; + Query_IDBANCO + &quot; &quot; + Query_IDPLAZA;
+        }
+       }
+      }
+      }else{
+        if( Query_PORRETETRA != 0 ){
+          Text26.Text = &quot;IMP. &quot; + ToString(FormatNumber(Query_PORRETETRA)) + &quot;% Base. &quot; + ToString(FormatNumber(Query_BASERETETRA));
+        }else{
+          Text26.Text = Query_DESCRITRA;
+        }
+      }
+    }
+
+    private void Data1_BeforePrint(object sender, EventArgs e)
+    {
+      Child7.Visible = (ToString(Report.GetColumnValue(&quot;Query.IDTIPDOC&quot;)) == &quot;003&quot;);  
+    } 
+
+    private void Shape2_BeforePrint(object sender, EventArgs e)
+    {
+      fd2Shape2.Height = fd2Shape2.Height + (Text16.Height - 5);
+      Child2.Height = Child2.Height + (Text16.Height - 5);
+    } 
+
+    private void Child2_BeforePrint(object sender, EventArgs e)
+    {
+      DataHeader1.Visible = !(mostrarDatosGerencia());
+      Child4.Visible = mostrarDatosGerencia();
+    }
+  }              
+} </ScriptText>
+  <Styles>
+    <Style Name="FondoCabecera0" Font="Arial, 10pt" ApplyTextFill="false" ApplyFont="false"/>
+    <Style Name="FondoCabecera1" Border.Lines="All" Border.Color="Gray" Border.Width="1.5" Fill.Color="Silver" Font="Arial, 10pt"/>
+    <Style Name="BarraColor0" Font="Courier New, 6.75pt" ApplyTextFill="false" ApplyFont="false"/>
+    <Style Name="BarraColor1" Border.Lines="Left, Right" Border.Color="Gray" Border.Width="1.5" Fill.Color="Gainsboro" Font="Arial, 10pt" ApplyTextFill="false" ApplyFont="false"/>
+    <Style Name="BarraColorDos0" Font="Courier New, 6.75pt" ApplyTextFill="false" ApplyFont="false"/>
+    <Style Name="BarraColorDos1" Border.Lines="Left, Right" Border.Color="Gray" Border.Width="1.5" Font="Arial, 10pt" ApplyTextFill="false" ApplyFont="false"/>
+    <Style Name="FuenteMatriz" Font="Microsoft Sans Serif, 8.249999pt"/>
+  </Styles>
+  <Dictionary>
+    <MsSqlDataConnection Name="Connection" ConnectionString="rijcmlqHwzMSgwTFaHpjtG3vsOj8QErAmetiGn45Xv3jWKdCaXrTH8gmFUXcsPNfjymozm5MQhPhiMhNOmIuU8ECFmkCiqx8XrmzaiszrKRyKOKhOB2LEyaKAJTfMyuiTsQSmZnYXuTX1rSCmK4JvSGxEyKkEdDGCZJtNki+3cG1DCBjDWcWQnAOSECaux+M2SeIF+fyElUnUEuILiydkBWNrvPTA==" CommandTimeout="0">
+      <TableDataSource Name="Table1" Alias="Logo" DataType="System.Int32" Enabled="true" SelectCommand="exec splogoempresa">
+        <Column Name="Iden" DataType="System.Int32"/>
+        <Column Name="Logo" DataType="System.Byte[]" BindableControl="Picture"/>
+      </TableDataSource>
+      <TableDataSource Name="Table" Alias="Query" DataType="System.Int32" Enabled="true" SelectCommand="SET FMTONLY OFF;&#13;&#10;Exec RptDocumentos&#13;&#10;@NDOCUMENTOS=@NDOCUMENTOS,&#13;&#10;@FUENTE=@FUENTE,&#13;&#10;@DOCUMENTO=@DOCUMENTO,&#13;&#10;@RFUENTEINI=@RFUENTEINI,&#13;&#10;@RFUENTEFIN=@RFUENTEFIN,&#13;&#10;@RDOCUMENTOINI=@RDOCUMENTOINI,&#13;&#10;@RDOCUMENTOFIN=@RDOCUMENTOFIN,&#13;&#10;@PROFESIONAL=@PROFESIONAL,&#13;&#10;@NOTACONTABLE=@NOTACONTABLE,&#13;&#10;@CIUDAD=@CIUDAD,&#13;&#10;@DIRECCION=@DIRECCION,&#13;&#10;@TELEFONO=@TELEFONO,&#13;&#10;@EMAIL=@EMAIL,&#13;&#10;@ESTILO=@ESTILO,&#13;&#10;@COMPAÑIA=@COMPAÑIA,&#13;&#10;@CORTE=@CORTE,&#13;&#10;@FAX=@FAX,&#13;&#10;@NIT=@NIT,&#13;&#10;@BU=@BU,&#13;&#10;@Consolidado=@Consolidado,&#13;&#10;@BuUsuario=@BuUsuario,&#13;&#10;@USUARIO=@USUARIO,&#13;&#10;@IdReportDataBase=@IdReportDataBase">
+        <Column Name="DESFUENTE" DataType="System.String"/>
+        <Column Name="IDTIPDOC" DataType="System.String"/>
+        <Column Name="ANODCTO" DataType="System.String"/>
+        <Column Name="FNTEDCTO" DataType="System.String"/>
+        <Column Name="NUMEDCTO" DataType="System.String"/>
+        <Column Name="FECHDCTO" DataType="System.String"/>
+        <Column Name="NUMTDCTO" DataType="System.Int32"/>
+        <Column Name="SUDBDCTO" DataType="System.Decimal"/>
+        <Column Name="SUCRDCTO" DataType="System.Decimal"/>
+        <Column Name="IACTDCTO" DataType="System.String"/>
+        <Column Name="DESCDCTO" DataType="System.String"/>
+        <Column Name="IDTERCERO" DataType="System.String"/>
+        <Column Name="IDCLIPRV" DataType="System.String"/>
+        <Column Name="CBADCTO" DataType="System.String"/>
+        <Column Name="CHEDCTO" DataType="System.String"/>
+        <Column Name="VCHDCTO" DataType="System.Decimal"/>
+        <Column Name="ENTREGADO" DataType="System.String"/>
+        <Column Name="TPRECDCTO" DataType="System.String"/>
+        <Column Name="NDRECDCTO" DataType="System.String"/>
+        <Column Name="ENFDCTO" DataType="System.DateTime"/>
+        <Column Name="AUXILIAR" DataType="System.String"/>
+        <Column Name="ITEM" DataType="System.String"/>
+        <Column Name="STATUSDCTO" DataType="System.String"/>
+        <Column Name="BENEFDCTO" DataType="System.String"/>
+        <Column Name="IMPRICHEQUE" DataType="System.String"/>
+        <Column Name="MONTOLETRAS" DataType="System.String"/>
+        <Column Name="NReversiones" DataType="System.Decimal"/>
+        <Column Name="AjusteInflacion" DataType="System.String"/>
+        <Column Name="Paag_Mes" DataType="System.Decimal"/>
+        <Column Name="Paag_Acu" DataType="System.Decimal"/>
+        <Column Name="IndContabPrestamo" DataType="System.String"/>
+        <Column Name="NumVales" DataType="System.Decimal"/>
+        <Column Name="NumValesConciliados" DataType="System.Decimal"/>
+        <Column Name="NCF" DataType="System.String"/>
+        <Column Name="NCF_Modificado" DataType="System.String"/>
+        <Column Name="Moneda" DataType="System.String"/>
+        <Column Name="VrMoneda" DataType="System.Decimal"/>
+        <Column Name="MontoMoneda" DataType="System.String"/>
+        <Column Name="VencCheque" DataType="System.String"/>
+        <Column Name="TasaCambioDoc" DataType="System.Decimal"/>
+        <Column Name="GenEsquema" DataType="System.String"/>
+        <Column Name="BeneficiarioCompleto" DataType="System.String"/>
+        <Column Name="ValorMonedaEgreso" DataType="System.Decimal"/>
+        <Column Name="ValorChequeDcto" DataType="System.Decimal"/>
+        <Column Name="MontoLetrasDcto" DataType="System.String"/>
+        <Column Name="MontoLetrasMoneda" DataType="System.String"/>
+        <Column Name="VencCheque1" DataType="System.String"/>
+        <Column Name="TBanco" DataType="System.String"/>
+        <Column Name="NOMBRETER" DataType="System.String"/>
+        <Column Name="DescTTercero" DataType="System.String"/>
+        <Column Name="TerceroCompleto" DataType="System.String"/>
+        <Column Name="DirTercero" DataType="System.String"/>
+        <Column Name="CiudadTercero" DataType="System.String"/>
+        <Column Name="TelefonoTercero" DataType="System.String"/>
+        <Column Name="CLIENTE" DataType="System.String"/>
+        <Column Name="DescTCliente" DataType="System.String"/>
+        <Column Name="ClienteCompleto" DataType="System.String"/>
+        <Column Name="DirCliente" DataType="System.String"/>
+        <Column Name="CiudadCliente" DataType="System.String"/>
+        <Column Name="TelefonoCliente" DataType="System.String"/>
+        <Column Name="PROVEEDOR" DataType="System.String"/>
+        <Column Name="DescTProveedor" DataType="System.String"/>
+        <Column Name="ProveedorCompleto" DataType="System.String"/>
+        <Column Name="DirProveedor" DataType="System.String"/>
+        <Column Name="CiudadProveedor" DataType="System.String"/>
+        <Column Name="TelefonoProveedor" DataType="System.String"/>
+        <Column Name="DESCCTA" DataType="System.String"/>
+        <Column Name="DESCENCO" DataType="System.String"/>
+        <Column Name="DescTAuxiliar" DataType="System.String"/>
+        <Column Name="MonedaBanco" DataType="System.String"/>
+        <Column Name="MonedaCia" DataType="System.String"/>
+        <Column Name="CodigoArchivoFisico" DataType="System.String"/>
+        <Column Name="NombreArchivoFisico" DataType="System.String"/>
+        <Column Name="Ncf_Documento" DataType="System.String"/>
+        <Column Name="ANOTRA" DataType="System.String"/>
+        <Column Name="IDFUENTE" DataType="System.String"/>
+        <Column Name="NUMDOCTRA" DataType="System.String"/>
+        <Column Name="CONSECUTRA" DataType="System.Int32"/>
+        <Column Name="FECHATRA" DataType="System.String"/>
+        <Column Name="CODICTA" DataType="System.String"/>
+        <Column Name="NITTRA" DataType="System.String"/>
+        <Column Name="AUXIAUX" DataType="System.String"/>
+        <Column Name="IDCENCO" DataType="System.String"/>
+        <Column Name="IDITEM" DataType="System.String"/>
+        <Column Name="DESCRITRA" DataType="System.String"/>
+        <Column Name="VALORTRA" DataType="System.Decimal"/>
+        <Column Name="INDCPITRA" DataType="System.String"/>
+        <Column Name="CONCILTRA" DataType="System.String"/>
+        <Column Name="IDBANCO" DataType="System.String"/>
+        <Column Name="IDVENDE" DataType="System.String"/>
+        <Column Name="IDPLAZA" DataType="System.String"/>
+        <Column Name="TIPOFAC" DataType="System.String"/>
+        <Column Name="NUMEFAC" DataType="System.String"/>
+        <Column Name="VENCEFAC" DataType="System.String"/>
+        <Column Name="REFEFAC" DataType="System.String"/>
+        <Column Name="IDUSUARIO" DataType="System.String"/>
+        <Column Name="FGRATRA" DataType="System.DateTime"/>
+        <Column Name="IDZONA" DataType="System.String"/>
+        <Column Name="CLIPRV" DataType="System.String"/>
+        <Column Name="PORRETETRA" DataType="System.Decimal"/>
+        <Column Name="BASERETETRA" DataType="System.Decimal"/>
+        <Column Name="CODPRESU" DataType="System.String"/>
+        <Column Name="NRESERVA" DataType="System.String"/>
+        <Column Name="VALORMONEDA" DataType="System.Decimal"/>
+        <Column Name="STATUSTRA" DataType="System.String"/>
+        <Column Name="CONSECUREV" DataType="System.Int32"/>
+        <Column Name="SERIE" DataType="System.String"/>
+        <Column Name="AUTORIZACION" DataType="System.String"/>
+        <Column Name="FECHAFACT" DataType="System.String"/>
+        <Column Name="Adicional_1" DataType="System.String"/>
+        <Column Name="Adicional_2" DataType="System.String"/>
+        <Column Name="Voucher" DataType="System.String"/>
+        <Column Name="TasaCambio" DataType="System.Decimal"/>
+        <Column Name="BU" DataType="System.String"/>
+        <Column Name="NCF1" DataType="System.String"/>
+        <Column Name="NCF_Modificado1" DataType="System.String"/>
+        <Column Name="FechaCaducidad" DataType="System.String"/>
+        <Column Name="TipoCuentaGer" DataType="System.String"/>
+        <Column Name="CuentaGer" DataType="System.String"/>
+        <Column Name="BancoGer" DataType="System.String"/>
+        <Column Name="NombreBancoGer" DataType="System.String"/>
+        <Column Name="GerenciaGer" DataType="System.String"/>
+        <Column Name="NombreCtaBasica" DataType="System.String"/>
+        <Column Name="CuentaCorriente" DataType="System.String"/>
+        <Column Name="DigitoVerificacion" DataType="System.String"/>
+        <Column Name="GrupoCta" DataType="System.String"/>
+        <Column Name="Revelaciones" DataType="System.String"/>
+        <Column Name="DescTItems" DataType="System.String"/>
+        <Column Name="PaisTercero" DataType="System.String"/>
+        <Column Name="Nombrebu" DataType="System.String"/>
+        <Column Name="MuestraDescrCta" DataType="System.String"/>
+        <CommandParameter Name="NDOCUMENTOS" DataType="3" Size="1" Expression="[NDOCUMENTOS]" DefaultValue="2"/>
+        <CommandParameter Name="FUENTE" DataType="3" Size="2" Expression="[FUENTE]" DefaultValue="88"/>
+        <CommandParameter Name="DOCUMENTO" DataType="3" Size="10" Expression="[DOCUMENTO]" DefaultValue="0000000011"/>
+        <CommandParameter Name="RFUENTEINI" DataType="3" Size="2" Expression="[RFUENTEINI]" DefaultValue="88"/>
+        <CommandParameter Name="RFUENTEFIN" DataType="3" Size="2" Expression="[RFUENTEFIN]" DefaultValue="88"/>
+        <CommandParameter Name="RDOCUMENTOINI" DataType="3" Size="10" Expression="[RDOCUMENTOINI]" DefaultValue="0000000011"/>
+        <CommandParameter Name="RDOCUMENTOFIN" DataType="3" Size="10" Expression="[RDOCUMENTOFIN]" DefaultValue="0000000011"/>
+        <CommandParameter Name="PROFESIONAL" DataType="3" Size="1" Expression="[PROFESIONAL]" DefaultValue="N"/>
+        <CommandParameter Name="NOTACONTABLE" DataType="3" Size="1" Expression="[NOTACONTABLE]" DefaultValue="1"/>
+        <CommandParameter Name="CIUDAD" DataType="22" Size="50" Expression="[CIUDAD]" DefaultValue="CARTAGENA - COLOMBIA"/>
+        <CommandParameter Name="DIRECCION" DataType="22" Size="150" Expression="[DIRECCION]" DefaultValue="CENTRO CIAL BOCAGRANDE L-203"/>
+        <CommandParameter Name="TELEFONO" DataType="22" Size="40" Expression="[TELEFONO]" DefaultValue="6655515-6655718"/>
+        <CommandParameter Name="EMAIL" DataType="22" Size="50" Expression="[EMAIL]" DefaultValue="jGomez@zeustecnologia.comS"/>
+        <CommandParameter Name="ESTILO" DataType="22" Size="10" Expression="[ESTILO]" DefaultValue="0"/>
+        <CommandParameter Name="COMPAÑIA" DataType="22" Size="100" Expression="[COMPAÑIA]" DefaultValue="ZEUS TECNOLOGIA S.A (DESARROLLO)"/>
+        <CommandParameter Name="CORTE" DataType="22" Size="20" Expression="[CORTE]" DefaultValue="2012/10/01"/>
+        <CommandParameter Name="FAX" DataType="22" Size="40" Expression="[FAX]" DefaultValue="6655515"/>
+        <CommandParameter Name="NIT" DataType="22" Size="30" Expression="[NIT]" DefaultValue="NIT. 806009752"/>
+        <CommandParameter Name="BU" DataType="22" Size="25" Expression="[BU]" DefaultValue="CTG"/>
+        <CommandParameter Name="Consolidado" DataType="3" Size="1" Expression="[Consolidado]" DefaultValue="S"/>
+        <CommandParameter Name="BuUsuario" DataType="3" Size="1" Expression="[BuUsuario]" DefaultValue="N"/>
+        <CommandParameter Name="USUARIO" DataType="22" Expression="[USUARIO]" DefaultValue="ZEUSSQL"/>
+        <CommandParameter Name="IdReportDataBase" DataType="22" Size="50" Expression="[IdReportDataBase]" DefaultValue="0"/>
+      </TableDataSource>
+    </MsSqlDataConnection>
+    <Parameter Name="NDOCUMENTOS" DataType="System.String" Expression="&quot;1&quot;"/>
+    <Parameter Name="FUENTE" DataType="System.String" Expression="&quot;04&quot;"/>
+    <Parameter Name="DOCUMENTO" DataType="System.String" Expression="&quot;0000001869&quot;"/>
+    <Parameter Name="RFUENTEINI" DataType="System.String" Expression="&quot;04&quot;"/>
+    <Parameter Name="RFUENTEFIN" DataType="System.String" Expression="&quot;04&quot;"/>
+    <Parameter Name="RDOCUMENTOINI" DataType="System.String" Expression="&quot;0000001869&quot;"/>
+    <Parameter Name="RDOCUMENTOFIN" DataType="System.String" Expression="&quot;0000001869&quot;"/>
+    <Parameter Name="PROFESIONAL" DataType="System.String" Expression="&quot;N&quot;"/>
+    <Parameter Name="NOTACONTABLE" DataType="System.String" Expression="&quot;1&quot;"/>
+    <Parameter Name="CIUDAD" DataType="System.String" Expression="&quot;CARTAGENA - COLOMBIA&quot;"/>
+    <Parameter Name="DIRECCION" DataType="System.String" Expression="&quot;CENTRO CIAL BOCAGRANDE L-203&quot;"/>
+    <Parameter Name="TELEFONO" DataType="System.String" Expression="&quot;6655515-6655718&quot;"/>
+    <Parameter Name="EMAIL" DataType="System.String" Expression="&quot;jGomez@zeustecnologia.comS&quot;"/>
+    <Parameter Name="ESTILO" DataType="System.String" Expression="&quot;0&quot;"/>
+    <Parameter Name="COMPAÑIA" DataType="System.String" Expression="&quot;ZEUS TECNOLOGIA S.A (UNIFICADA)&quot;"/>
+    <Parameter Name="CORTE" DataType="System.String" Expression="&quot;2013/03/31&quot;"/>
+    <Parameter Name="FAX" DataType="System.String" Expression="&quot;6655515&quot;"/>
+    <Parameter Name="NIT" DataType="System.String" Expression="&quot;NIT. 806009752&quot;"/>
+    <Parameter Name="BU" DataType="System.String" Expression="&quot;CTG&quot;"/>
+    <Parameter Name="Consolidado" DataType="System.String" Expression="&quot;S&quot;"/>
+    <Parameter Name="BuUsuario" DataType="System.String" Expression="&quot;N&quot;"/>
+    <Parameter Name="USUARIO" DataType="System.String" Expression="&quot;ZEUSSQL&quot;"/>
+    <Parameter Name="IdReportDataBase" DataType="System.String" Expression="8085"/>
+    <Parameter Name="Impresora" DataType="System.String" Expression="&quot;L&quot;"/>
+    <Total Name="TotalDebito" Expression="[Query.Valortra]" Evaluator="Data1" PrintOn="GroupFooter2" EvaluateCondition="[Query.Valortra]&gt;=0"/>
+    <Total Name="TotalCredito" Expression="Abs([Query.Valortra])" Evaluator="Data1" PrintOn="GroupFooter2" EvaluateCondition="[Query.Valortra]&lt;0"/>
+  </Dictionary>
+  <ReportPage Name="Page1" PaperWidth="215.9" PaperHeight="279.4" RawPaperSize="119" FirstPageSource="15" OtherPagesSource="15" Guides="368.55" Watermark.Font="Arial, 60pt">
+    <PageHeaderBand Name="PageHeader1" Width="740.5" Height="182.37" BeforePrintEvent="PageHeader1_BeforePrint">
+      <ShapeObject Name="Shape1" Width="740.88" Height="141.75" Border.Color="Gray" Shape="RoundRectangle"/>
+      <TextObject Name="Compania" Left="198.45" Top="6.45" Width="330.75" Height="35.91" Text="[COMPAÑIA]" Padding="0, 2, 1, 1" HorzAlign="Center" Font="Microsoft Sans Serif, 12pt, style=Bold"/>
+      <TextObject Name="Titulo" Left="198.45" Top="43.47" Width="330.75" Height="18.9" Text="[NIT]" Padding="0, 2, 1, 1" HorzAlign="Center" Font="Courier New, 9pt, style=Bold"/>
+      <PictureObject Name="Picture1" Left="18.9" Top="10.96" Width="151.18" Height="75.59" Fill.Color="White" DataColumn="Logo.Logo" Padding="0, 2, 1, 1"/>
+      <TextObject Name="MemoLinea" Top="167.25" Width="740.41" Height="15.12" Border.Lines="Top" Border.Color="Navy" Padding="0, 2, 1, 1" HorzAlign="Center" Font="Courier New, 7pt"/>
+      <TextObject Name="Text1" Left="198.45" Top="71.82" Width="330.75" Height="18.9" Text="[DIRECCION]" Padding="0, 2, 1, 1" HorzAlign="Center" Font="Courier New, 9pt, style=Bold"/>
+      <TextObject Name="Text2" Left="198.45" Top="100.17" Width="330.75" Height="18.9" Text="[TELEFONO] " Padding="0, 2, 1, 1" HorzAlign="Center" Font="Courier New, 9pt, style=Bold"/>
+      <TextObject Name="Text3" Left="529.2" Top="15.12" Width="201.76" Height="18.9" Text="[Query.DESFUENTE]" Padding="0, 2, 1, 1" HorzAlign="Right" Font="Courier New, 9pt, style=Bold"/>
+      <TextObject Name="Text4" Top="147.19" Width="740.88" Height="15.12" Text="Corte: [CORTE] - Fecha: [FormatDateTime([Date],&quot;Short Date&quot;)]   -   Hora de Impresión: [Format(&quot;{0:hh:mm tt}&quot;, DateTime.Now)] - Página: [Page#] de [TotalPages#]" Padding="0, 2, 1, 1" HorzAlign="Center" Font="Courier New, 7pt"/>
+      <TextObject Name="Text5" Left="529.2" Top="103.95" Width="211.68" Height="15.12" Text="[IIf(Trim([Query.CodigoArchivoFisico])!=&quot;&quot;,&quot;Archivo: &quot;+[Query.CodigoArchivoFisico]+&quot; &quot; + [Query.NombreArchivoFisico],&quot;&quot;)]" Padding="0, 2, 1, 1" HorzAlign="Right" Font="Courier New, 9pt, style=Bold"/>
+      <LineObject Name="Line1" Left="198.45" Height="139.86" Border.Color="Gray"/>
+      <LineObject Name="Line2" Left="529.2" Height="139.86" Border.Color="Gray"/>
+      <TextObject Name="Text38" Left="529.2" Top="75.6" Width="211.21" Height="18.9" Text="Fecha: [Query.FECHDCTO]" Padding="0, 2, 1, 1" HorzAlign="Right" Font="Courier New, 9pt, style=Bold"/>
+      <TextObject Name="Text39" Left="529.2" Top="47.25" Width="211.21" Height="18.9" Text="No: [Query.IDFUENTE] - [Query.NUMDOCTRA]" Padding="0, 2, 1, 1" HorzAlign="Right" Font="Courier New, 9pt, style=Bold"/>
+    </PageHeaderBand>
+    <GroupHeaderBand Name="GroupHeader1" Top="186.37" Width="740.5" StartNewPage="true" Condition="Trim([Query.IDFUENTE])" SortOrder="None">
+      <GroupHeaderBand Name="GroupHeader2" Top="190.37" Width="740.5" Height="9.45" StartNewPage="true" Condition="Trim([Query.NUMEDCTO])" SortOrder="None">
+        <ChildBand Name="Child1" Top="203.82" Width="740.5" Height="52.92">
+          <ShapeObject Name="fd2Shape1" Width="740.41" Height="45.36" Border.Color="Gray" Border.Width="1.5" Style="BarraColorDos1" Shape="RoundRectangle" Curve="0.7"/>
+          <TextObject Name="Text7" Left="0.76" Width="738.61" Height="22.68" Border.Lines="Bottom" Border.Color="Gray" Border.Width="0.4" Padding="1, 2, 2, 1" VertAlign="Center" Font="Courier New, 7pt"/>
+          <TextObject Name="Text6" Width="523.06" Height="22.68" Text=" [Trim([Query.DESFUENTE])] No: [Trim([Query.IDFUENTE])]-[Trim([Query.NUMEDCTO])]" Padding="0, 5, 1, 2" Font="Courier New, 10pt, style=Bold"/>
+          <TextObject Name="Text8" Left="523.06" Width="217.35" Height="22.68" Text="[Substring(&quot;Fecha : &quot; + [Query.FECHDCTO]+&quot;                              &quot;,0,30)+&quot; &quot;]   " Padding="0, 5, 1, 2" HorzAlign="Right" Font="Courier New, 10pt, style=Bold"/>
+          <TextObject Name="Text38" Top="22.68" Width="740.41" Height="22.68" Text="&lt;b&gt; Unidad de Negocio: &lt;/b&gt; [Query.BU]" Padding="0, 4, 1, 2" Font="Courier New, 10pt" TextRenderType="HtmlTags"/>
+          <ChildBand Name="Child2" Restrictions="DontMove, DontResize" Top="259.03" Width="740.5" Height="85.05" CanShrink="true" BeforePrintEvent="Child2_BeforePrint">
+            <ShapeObject Name="fd2Shape2" Top="3.78" Width="740.88" Height="66.15" Border.Color="Gray" GrowToBottom="true" BeforePrintEvent="Shape2_BeforePrint" Shape="RoundRectangle" Curve="0.7"/>
+            <TextObject Name="Text9" Top="7.56" Width="740.41" Height="56.7" Padding="0, 3, 1, 1" Font="Courier New, 8pt"/>
+            <SubreportObject Name="Subreport1" Top="45.36" Width="738.99" Height="3.78" ShiftMode="Never" ReportPage="Page2" PrintOnParent="true"/>
+            <TextObject Name="Text10" Top="7.56" Width="105.84" Height="18.9" Border.Lines="Bottom" Border.Color="Gray" Border.Width="0.4" BeforePrintEvent="Text10_BeforePrint" Text=" VER CODIGO" Padding="0, 2, 5, 3" Font="Courier New, 8pt, style=Bold"/>
+            <TextObject Name="Text11" Left="105.84" Top="7.56" Width="262.71" Height="18.9" Border.Lines="Bottom" Border.Color="Gray" Border.Width="0.4" BeforePrintEvent="Text11_BeforePrint" Text="VER CODIGO" Padding="0, 2, 5, 3" Font="Courier New, 8pt"/>
+            <TextObject Name="Text12" Left="368.55" Top="7.56" Width="370.82" Height="18.9" Border.Lines="Bottom" Border.Color="Gray" Border.Width="0.4" BeforePrintEvent="Text12_BeforePrint" Text="VER CODIGO" Padding="0, 2, 5, 3" Font="Courier New, 8pt" TextRenderType="HtmlTags"/>
+            <TextObject Name="Text13" Top="26.46" Width="105.84" Height="18.9" Border.Lines="Bottom" Border.Color="Gray" Border.Width="0.4" BeforePrintEvent="Text10_BeforePrint" Text=" Nombre      :" Padding="0, 3, 5, 3" Font="Courier New, 8pt, style=Bold"/>
+            <TextObject Name="Text14" Left="105.84" Top="26.46" Width="385.56" Height="18.9" Border.Lines="Bottom" Border.Color="Gray" Border.Width="0.4" BeforePrintEvent="Text14_BeforePrint" Text="VER CODIGO" Padding="0, 3, 5, 3" Font="Courier New, 8pt"/>
+            <TextObject Name="Text15" Left="491.4" Top="26.46" Width="247.97" Height="18.9" Border.Lines="Bottom" Border.Color="Gray" Border.Width="0.4" Text="&lt;b&gt;Tasa de Cambio:&lt;/b&gt; [FormatNumber([Query.TasaCambioDoc],4)]" Padding="0, 3, 5, 3" Font="Courier New, 8pt" TextRenderType="HtmlTags"/>
+            <ChildBand Name="Child8" Top="349.79" Width="740.5" Height="13.23"/>
+          </ChildBand>
+        </ChildBand>
+        <DataBand Name="Data1" Top="390.3" Width="740.5" Height="15.12" BeforePrintEvent="Data1_BeforePrint" DataSource="Table">
+          <TextObject Name="fddText23" Left="0.76" Width="738.99" Height="15.12" Border.Lines="Left, Right" Border.Color="Gray" Border.Width="0.7" Padding="0, 2, 1, 1" Font="Courier New, 8pt"/>
+          <TextObject Name="Text26" Left="263.14" Width="226.37" Height="15.12" BeforePrintEvent="Text26_BeforePrint" Text="VER CODIGO" Padding="0, 3, 1, 1" Font="Courier New, 7pt"/>
+          <TextObject Name="Text24" Width="113.4" Height="15.12" Text="[Query.CODICTA]" Padding="0, 3, 1, 1" Font="Courier New, 7pt"/>
+          <TextObject Name="Text25" Left="113.4" Width="149.72" Height="15.12" BeforePrintEvent="Text25_BeforePrint" Text="VER CODIGO" Padding="0, 3, 1, 1" Font="Courier New, 7pt"/>
+          <TextObject Name="Text27" Left="489.51" Width="124.74" Height="15.12" Text="[IIf([Query.Valortra]&gt;=0,Abs([Query.Valortra]),0)]&#13;&#10;" Padding="0, 3, 1, 1" Format="Number" Format.UseLocale="true" HorzAlign="Right" Font="Courier New, 7pt"/>
+          <TextObject Name="Text28" Left="614.25" Width="124.74" Height="15.12" Text="[IIf([Query.Valortra]&lt;0,Abs([Query.Valortra]),0)]" Padding="0, 3, 1, 1" Format="Number" Format.UseLocale="true" HorzAlign="Right" Font="Courier New, 7pt"/>
+          <DataHeaderBand Name="DataHeader2" Top="367.02" Width="740.5" Height="19.28" RepeatOnEveryPage="true">
+            <ShapeObject Name="fcShape3" Width="740.88" Height="19.28" Border.Color="Gray" Border.Width="2" Fill.Color="Silver" BeforePrintEvent="Shape3_BeforePrint" Shape="RoundRectangle" Curve="0.7"/>
+            <TextObject Name="fd2Text39" Left="0.76" Top="9.45" Width="738.99" Height="9.45" Border.Lines="Left, Right" Border.Color="Gray" Border.Width="0.7" Padding="0, 2, 1, 1" Font="Courier New, 8pt"/>
+            <TextObject Name="Text17" Width="113.4" Height="18.9" Text="Cuenta" Padding="0, 3, 1, 2" Font="Courier New, 8pt, style=Bold"/>
+            <TextObject Name="Text18" Left="113.4" Width="149.72" Height="18.9" Text="Aux/Cco/Ter/Cli/Prov" Padding="0, 3, 1, 2" Font="Courier New, 8pt, style=Bold"/>
+            <TextObject Name="Text19" Left="263.14" Width="226.37" Height="18.9" Text="Descripción" Padding="0, 3, 1, 2" Font="Courier New, 8pt, style=Bold"/>
+            <TextObject Name="Text20" Left="489.51" Width="124.74" Height="18.9" Text="Débito" Padding="0, 3, 1, 2" HorzAlign="Right" Font="Courier New, 8pt, style=Bold"/>
+            <TextObject Name="Text21" Left="614.25" Width="124.74" Height="18.9" Text="Crédito" Padding="0, 3, 1, 2" HorzAlign="Right" Font="Courier New, 8pt, style=Bold"/>
+          </DataHeaderBand>
+          <DataFooterBand Name="DataFooter2" Top="409.42" Width="740.5" Height="0.38" RepeatOnEveryPage="true">
+            <TextObject Name="Text49" Left="0.76" Width="738.99" Height="0.38" Border.Lines="Bottom" Border.Color="Gray" Border.Width="0.7" Padding="0, 2, 1, 1" Font="Courier New, 8pt"/>
+          </DataFooterBand>
+        </DataBand>
+        <GroupFooterBand Name="GroupFooter2" Top="413.8" Width="740.5" Height="19.28">
+          <ShapeObject Name="fd2Shape4" Width="740.88" Height="19.28" Border.Color="Gray" Border.Width="1.6" BeforePrintEvent="Shape3_BeforePrint" Shape="RoundRectangle" Curve="0.7"/>
+          <TextObject Name="Text30" Width="489.51" Height="18.9" Text="Totales" Padding="2, 4, 1, 1" Font="Courier New, 7pt, style=Bold"/>
+          <TextObject Name="Text33" Left="489.51" Width="124.74" Height="18.9" BeforePrintEvent="Text27_BeforePrint" Text="[TotalDebito]" Padding="0, 4, 1, 1" Format="Number" Format.UseLocale="true" HorzAlign="Right" Font="Courier New, 7pt, style=Bold"/>
+          <TextObject Name="Text34" Left="614.25" Width="124.74" Height="18.9" BeforePrintEvent="Text28_BeforePrint" Text="[TotalCredito]" Padding="0, 4, 1, 1" Format="Number" Format.UseLocale="true" HorzAlign="Right" Font="Courier New, 7pt, style=Bold"/>
+          <TextObject Name="fd2Text40" Left="0.76" Width="738.99" Height="9.45" Border.Lines="Left, Right" Border.Color="Gray" Border.Width="1.5" Padding="0, 2, 1, 1" Font="Courier New, 8pt"/>
+          <ChildBand Name="Child5" Top="437.08" Width="740.5">
+            <ChildBand Name="Child6" Top="441.08" Width="740.5" Height="113.4">
+              <TextObject Name="Text35" Left="91.48" Top="56.7" Width="557.55" Height="18.9" Text="Elaboró: ____________________      Revisó: _____________________      Aprobó: ____________________" Padding="0, 2, 1, 1" Font="Microsoft Sans Serif, 8.249999pt"/>
+              <TextObject Name="Text36" Left="142.75" Top="54.7" Width="102.06" Height="18.9" Text="[Query.IDUSUARIO]" Padding="0, 2, 1, 1" HorzAlign="Center" Font="Microsoft Sans Serif, 8.249999pt"/>
+              <ChildBand Name="Child7" Top="558.48" Width="740.5" Height="94.5">
+                <TextObject Name="Text37" Left="237.95" Top="37.8" Width="264.6" Height="28.35" Text="Recibí conforme:  ____________________ &#13;&#10;C.C.# " Padding="0, 2, 1, 1" Font="Microsoft Sans Serif, 8.249999pt"/>
+              </ChildBand>
+            </ChildBand>
+          </ChildBand>
+        </GroupFooterBand>
+      </GroupHeaderBand>
+      <GroupFooterBand Name="GroupFooter1" Top="656.98" Width="740.5"/>
+    </GroupHeaderBand>
+    <ReportSummaryBand Name="ReportSummary1" Top="660.98" Width="740.5"/>
+  </ReportPage>
+  <ReportPage Name="Page2" PaperWidth="215.9" PaperHeight="279.4" RawPaperSize="1" FirstPageSource="15" OtherPagesSource="15" Watermark.Font="Arial, 60pt">
+    <DataBand Name="Data2" Top="70.71" Width="740.5" CanShrink="true">
+      <DataHeaderBand Name="DataHeader1" Width="740.5" Height="18.9" CanGrow="true">
+        <TextObject Name="Text16" Width="738.99" Height="18.9" CanGrow="true" GrowToBottom="true" BeforePrintEvent="Text16_BeforePrint" CanBreak="false" Text="VER CODIGO" Padding="6, 5, 5, 1" Font="Courier New, 8pt"/>
+        <ChildBand Name="Child4" Top="22.13" Width="740.5" Height="45.36" CanGrow="true">
+          <TextObject Name="Text40" Width="103.95" Height="15.12" CanGrow="true" GrowToBottom="true" CanBreak="false" Text="Gerencia    :" Padding="6, 3, 0, 0" Font="Courier New, 8pt, style=Bold"/>
+          <TextObject Name="Text41" Left="103.95" Width="207.9" Height="15.12" CanGrow="true" GrowToBottom="true" CanBreak="false" Text="[Trim([Query.GerenciaGer])]" Padding="0, 3, 0, 0" Font="Courier New, 8pt"/>
+          <TextObject Name="Text42" Left="103.95" Top="15.12" Width="635.04" Height="15.12" Text="[Query.TipoCuentaGer] [Trim([Query.CuentaGer])]" Padding="0, 3, 0, 0" WordWrap="false" Font="Courier New, 8pt"/>
+          <TextObject Name="Text43" Left="315.63" Width="51.03" Height="15.12" CanGrow="true" GrowToBottom="true" CanBreak="false" Text="Banco:" Padding="6, 3, 0, 0" Font="Courier New, 8pt, style=Bold"/>
+          <TextObject Name="Text44" Left="366.66" Width="372.33" Height="15.12" CanGrow="true" GrowToBottom="true" CanBreak="false" Text="[Trim([Query.NombreBancoGer])]" Padding="0, 3, 0, 0" WordWrap="false" Font="Courier New, 8pt"/>
+          <TextObject Name="Text46" Top="30.24" Width="103.95" Height="15.12" CanGrow="true" GrowToBottom="true" CanBreak="false" Text="Por Concepto:" Padding="6, 3, 0, 0" Font="Courier New, 8pt, style=Bold"/>
+          <TextObject Name="Text47" Left="103.95" Top="30.24" Width="635.04" Height="15.12" CanGrow="true" GrowToBottom="true" CanBreak="false" Text="[Trim([Query.DESCDCTO])]" Padding="0, 2, 0, 2" Font="Courier New, 8pt"/>
+          <TextObject Name="Text48" Top="15.12" Width="103.95" Height="15.12" Text="Cuenta      :" Padding="6, 3, 0, 0" WordWrap="false" Font="Courier New, 8pt, style=Bold"/>
+        </ChildBand>
+      </DataHeaderBand>
+      <DataFooterBand Name="DataFooter1" Top="73.94" Width="740.5" Height="9.45"/>
+    </DataBand>
+  </ReportPage>
+</Report>

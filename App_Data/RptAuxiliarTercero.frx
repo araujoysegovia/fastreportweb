@@ -1,0 +1,465 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<inherited BaseReport="RptBase3.frx" ScriptLanguage="CSharp" ReportInfo.Created="10/05/2012 14:15:31" ReportInfo.Modified="08/04/2017 10:33:30" ReportInfo.CreatorVersion="1.9.1.0">
+  <ScriptText>using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Windows.Forms;
+using System.Drawing;
+using System.Data;
+using FastReport;
+using FastReport.Data;
+using FastReport.Dialog;
+using FastReport.Barcode;
+using FastReport.Table;
+using FastReport.Utils;
+
+namespace FastReport
+{
+  public class ReportScript
+  {
+    
+      private void quitarEstilos(ObjectCollection Objectos) {
+         
+          foreach (Base item in Report.AllObjects) {
+            
+            if (item is ShapeObject)
+              ((ShapeObject)item).Visible = false;
+          
+            if (item is LineObject)
+              ((LineObject)item).Visible = false;
+            
+            if (item is TextObject)
+              ((TextObject)item).Style = &quot;FuenteMatriz&quot;;
+            
+            if (item is PictureObject)
+              ((PictureObject)item).Visible = false;
+            
+          }
+    
+      }
+    
+      private void cambiarEstilos(int style) {
+        
+        foreach (Base item in Report.AllObjects) {
+          
+          if (item is TextObject) {
+            
+            if (item.Name.StartsWith(&quot;fc&quot;)) {
+              ((TextObject)item).Style = &quot;FondoCabecera&quot; + style;
+            } else if (item.Name.StartsWith(&quot;fd3&quot;)) {
+              ((TextObject)item).Style = &quot;BarraColorDos&quot; + style;
+              ((TextObject)item).EvenStyle = &quot;BarraColor&quot; + style;
+            } else if (item.Name.StartsWith(&quot;fd2&quot;) || item.Name.StartsWith(&quot;fdd&quot;)) {
+              ((TextObject)item).Style = &quot;BarraColorDos&quot; + style;
+            } else if (item.Name.StartsWith(&quot;fd&quot;)) {
+              ((TextObject)item).Style = &quot;BarraColor&quot; + style;
+            }
+            
+          }   
+        }
+      }
+      
+    private void _StartReport(object sender, EventArgs e)
+    {
+
+      // MATRIZ - LASER
+      if(((String)Report.GetParameterValue(&quot;Impresora&quot;))==&quot;M&quot;) {
+        quitarEstilos(Report.AllObjects);
+      }else {
+        cambiarEstilos(((String)Report.GetParameterValue(&quot;Estilo&quot;))==&quot;N&quot;?0:1);
+      }
+      
+      String GENERAL = ToString(Report.GetParameterValue(&quot;GENERAL&quot;));
+      
+      // Lectura de Parametros
+      
+      String DETRES = ToString(Report.GetParameterValue(&quot;DETRES&quot;)).Trim();
+      String Grupo = ToString(Report.GetParameterValue(&quot;Grupo&quot;)).Trim();
+      String GRUPOCENCO = ToString(Report.GetParameterValue(&quot;GRUPOCENCO&quot;)).Trim();
+
+      Child2.Visible = (GENERAL.Equals(&quot;S&quot;));
+      
+      if (DETRES.Equals(&quot;R&quot;))
+      {
+        Text5.Text = &quot;Listado de Auxiliar de Terceros - Resumido (&quot; + Grupo + &quot;)&quot;;
+      }
+      else
+      {
+        Text5.Text = &quot;Listado de Auxiliar de Terceros - Detallado (&quot; + Grupo + &quot;)&quot;;
+      } 
+
+      // Si el reporte es resumido se oculta la banda de Detalle.
+      Detalle.Visible = ((DETRES.Equals(&quot;D&quot;)) &amp;&amp; (GRUPOCENCO.Equals(&quot;N&quot;)));
+      Head_Grupo2_b.Visible = Detalle.Visible;
+
+      //Text606.Visible = (!(Grupo.Equals(&quot;Tercero-Cuenta&quot;)));
+      //Text607.Visible = (!(Grupo.Equals(&quot;Tercero-Cuenta&quot;)));
+      if ((DETRES.Equals(&quot;D&quot;)) || ((DETRES.Equals(&quot;R&quot;)) &amp;&amp; (GRUPOCENCO.Equals(&quot;S&quot;))))
+      {
+        Text21.Visible = true; //(!(Grupo.Equals(&quot;Cuenta-Tercero&quot;)));
+        Text22.Visible = true; //(!(Grupo.Equals(&quot;Cuenta-Tercero&quot;)));
+      }
+      
+      // Detallado Por Centro de Costo
+      DetalleCCO.Visible = ((DETRES.Equals(&quot;D&quot;)) &amp;&amp; (GRUPOCENCO.Equals(&quot;S&quot;)));
+      Head_CentroCosto.Visible = DetalleCCO.Visible;
+      Head_CentroCosto_a.Visible = DetalleCCO.Visible;
+      Foot_CentroCosto.Visible = DetalleCCO.Visible;
+      
+      Head_Resumido.Visible = (DETRES.Equals(&quot;R&quot;));
+      
+      Head_Grupo2.Visible = true;
+      Foot_Grupo2.Visible = true;
+
+      
+      if ((DETRES.Equals(&quot;R&quot;)) &amp;&amp; (GRUPOCENCO.Equals(&quot;S&quot;))) 
+      {
+        Head_CentroCosto.Visible = false;
+        Head_CentroCosto_a.Visible = false;
+        Foot_CentroCosto.Visible = false;
+        Foot_CentroCosto_a.Visible = true;
+      }
+
+      if ((DETRES.Equals(&quot;R&quot;)) &amp;&amp; (GRUPOCENCO.Equals(&quot;N&quot;))) 
+      {
+        Head_Grupo2.Visible = false;
+        Head_Grupo2_b.Visible = false;
+        Foot_Grupo2.Visible = false;
+        Foot_Grupo2_a.Visible = true;
+        Memo8.Visible = true;
+        Text604.Visible = true;
+        Text605.Visible = true;
+      }
+
+      // Detallado
+      if (Grupo.Equals(&quot;Cuenta-Tercero&quot;))
+      {
+        TxtGrupo1.Text = &quot;Cuenta: &quot;;
+        CodGrupo1.Text = &quot;[Query.CODICTA]&quot;;
+        NomGrupo1.Text = &quot;[Query.DESCCTA]&quot;;
+          
+        TxtGrupo2.Text = &quot;Tercero: &quot;;
+        CodGrupo2.Text = &quot;[Query.NITTRA]&quot;;
+        NomGrupo2.Text = &quot;[Query.NOMBRETER]&quot;;
+      
+        TxtTotalGrupo1.Text = &quot;Total Cuenta&quot;;
+        TxtTotalGrupo2.Text = &quot;Total Tercero&quot;;
+        TxtTotalGrupoCentro.Text = &quot;Total Centro de Costo&quot;;
+      
+        // Resumido
+        Text34.Text = &quot;[Query.NITTRA]&quot;;
+        Text35.Text = &quot;[Query.NOMBRETER]&quot;;
+      }
+      else
+      {
+        TxtGrupo1.Text = &quot;Tercero: &quot;;
+        CodGrupo1.Text = &quot;[Query.NITTRA]&quot;;
+        NomGrupo1.Text = &quot;[Query.NOMBRETER]&quot;;
+
+        TxtGrupo2.Text = &quot;Cuenta: &quot;;
+        CodGrupo2.Text = &quot;[Query.CODICTA]&quot;;
+        NomGrupo2.Text = &quot;[Query.DESCCTA]&quot;;
+
+        TxtTotalGrupo1.Text = &quot;Total Tercero&quot;;
+        TxtTotalGrupo2.Text = &quot;Total Cuenta&quot;;
+        TxtTotalGrupoCentro.Text = &quot;Total Centro de Costo&quot;;
+
+        // Resumido
+        Text34.Text = &quot;[Query.CODICTA]&quot;;
+        Text35.Text = &quot;[Query.DESCCTA]&quot;;
+      }
+      
+    }
+
+    private void Detalle_BeforePrint(object sender, EventArgs e)
+    {
+      String Query_IDFUENTE = ToString(Report.GetColumnValue(&quot;Query.IDFUENTE&quot;));
+      String Query_NUMDOCTRA = ToString(Report.GetColumnValue(&quot;Query.NUMDOCTRA&quot;));
+      
+      if(Trim(Query_IDFUENTE)==&quot;&quot; &amp;&amp; Trim(Query_NUMDOCTRA)==&quot;&quot;){
+        Detalle.Visible = false;
+      }
+    }
+
+    private void DetalleCCO_BeforePrint(object sender, EventArgs e)
+    {
+      String Query_IDFUENTE = ToString(Report.GetColumnValue(&quot;Query.IDFUENTE&quot;));
+      String Query_NUMDOCTRA = ToString(Report.GetColumnValue(&quot;Query.NUMDOCTRA&quot;));
+      
+      if(Trim(Query_IDFUENTE)==&quot;&quot; &amp;&amp; Trim(Query_NUMDOCTRA)==&quot;&quot;){
+        DetalleCCO.Visible = false;
+      }
+    }
+    
+  }
+}
+</ScriptText>
+  <Styles>
+    <Style Name="FondoCabecera0" Border.Lines="All" ApplyTextFill="false" ApplyFont="false"/>
+    <Style Name="FondoCabecera1" Border.Lines="All" Border.Color="Gray" Border.Width="1.5" Fill.Color="Silver"/>
+    <Style Name="BarraColor0" Font="Courier New, 6.75pt" ApplyTextFill="false" ApplyFont="false"/>
+    <Style Name="BarraColor1" Border.Lines="All" Border.Color="Gray" Border.Width="1.5" Fill.Color="Gainsboro" ApplyTextFill="false" ApplyFont="false"/>
+    <Style Name="BarraColorDos0" Font="Courier New, 6.75pt" ApplyTextFill="false" ApplyFont="false"/>
+    <Style Name="BarraColorDos1" Border.Lines="All" Border.Color="Gray" Border.Width="1.5" ApplyTextFill="false" ApplyFont="false"/>
+    <Style Name="FuenteMatriz" Font="Tahoma, 6.75pt"/>
+  </Styles>
+  <Dictionary>
+    <MsSqlDataConnection Name="RptBaseDB" ConnectionString="rijcmlqGoclSPiFEstCqwU0WKACzGSklOVPziZhK7O62CwE4dIxxyD68mIdiQnMD+O691RknlLqL6aJU8pjQ8dtH5MTow6egUCx9aSYSIpeDUl4y7Z3FFk2NGjE9lOaAjIxQFkn6zmuVuFYK/yDpz+c7XDigZgHod/GOXHwH1+hCTzatht34yrRShj56bMA/0LsnS/9xo0XSkDJT+QbGn/MGCdK8nTB/tutUFd/jPt0hBmQOVdQu29Z8fwNPKynVYXaClrS" CommandTimeout="0"/>
+    <MsSqlDataConnection Name="Connection" ConnectionString="rijcmlqGoclSPiFEstCqwU0WKACzAyzJda6ILSXifuItSoYH0GNc1eMvJWLaCPGF1AQVM3HKN6nsFRJ4zGOX9Oqv7sB147Ki3USAt0i/lQtMHE+JbmqmmkAMoSiE9Vn1RDAEGfz97gTdVw6ZfnU/gMj4jNEqW3wnaCHMRNRm2ZtTbmIgZaykZr3wdQauy2vOLs8h3esrM6T0PlCtw1HfDv/UN7zfL0Sq0LruXLksdoHv0fOLaI=" CommandTimeout="0">
+      <TableDataSource Name="Table" Alias="Query" DataType="System.Int32" Enabled="true" TableName="Table" SelectCommand="SET FMTONLY OFF;&#13;&#10;Execute spRptAuxiliarTercero&#13;&#10;@FECHAI=@FECHAI,&#13;&#10;@FECHAF=@FECHAF,&#13;&#10;@NITI=@NITI,&#13;&#10;@NITF=@NITF,&#13;&#10;@CTAI=@CTAI,&#13;&#10;@CTAF=@CTAF,&#13;&#10;@COMPAÑIA=@COMPAÑIA,&#13;&#10;@CORTE=@CORTE,&#13;&#10;@ESTILO=@ESTILO,&#13;&#10;@Grupo=@Grupo,&#13;&#10;@DETRES=@DETRES,&#13;&#10;@ORDEN=@ORDEN,&#13;&#10;@GRUPOCENCO=@GRUPOCENCO,&#13;&#10;@CENCOINI=@CENCOINI,&#13;&#10;@CENCOFIN=@CENCOFIN,&#13;&#10;@Impresion=@Impresion,&#13;&#10;@BU=@BU,&#13;&#10;@Consolidado=@Consolidado,&#13;&#10;@Usuario=@Usuario,&#13;&#10;@General=@General,&#13;&#10;@IdReporte=@IdReporte&#13;&#10;">
+        <Column Name="NITTRA" DataType="System.String"/>
+        <Column Name="IDTERCERO" DataType="System.String"/>
+        <Column Name="NOMBRETER" DataType="System.String"/>
+        <Column Name="CODICTA" DataType="System.String"/>
+        <Column Name="DESCCTA" DataType="System.String"/>
+        <Column Name="IDCENCO" DataType="System.String"/>
+        <Column Name="DESCENCO" DataType="System.String"/>
+        <Column Name="AUXIAUX" DataType="System.String"/>
+        <Column Name="DESAUXI" DataType="System.String"/>
+        <Column Name="CONSECUTRA" DataType="System.Int32"/>
+        <Column Name="IDFUENTE" DataType="System.String"/>
+        <Column Name="NUMDOCTRA" DataType="System.String"/>
+        <Column Name="FECHATRA" DataType="System.String"/>
+        <Column Name="DESCRITRA" DataType="System.String"/>
+        <Column Name="DEBITOS" DataType="System.Decimal"/>
+        <Column Name="CREDITOS" DataType="System.Decimal"/>
+        <Column Name="Grupo1" DataType="System.String"/>
+        <Column Name="Grupo2" DataType="System.String"/>
+        <Column Name="SaldoAnterior" DataType="System.Decimal"/>
+        <Column Name="SaldoAnteriorAcuG1G2" DataType="System.Decimal"/>
+        <Column Name="SaldoAnteriorAcuG1" DataType="System.Decimal"/>
+        <Column Name="CCOAUX" DataType="System.String"/>
+        <Column Name="OrdenGrupoRtp" DataType="System.String"/>
+        <CommandParameter Name="FECHAI" DataType="22" Size="10" Expression="[FECHAI]" DefaultValue="&quot;&quot;"/>
+        <CommandParameter Name="FECHAF" DataType="22" Size="10" Expression="[FECHAF]" DefaultValue="&quot;&quot;"/>
+        <CommandParameter Name="NITI" DataType="22" Size="25" Expression="[NITI]" DefaultValue="&quot;&quot;"/>
+        <CommandParameter Name="NITF" DataType="22" Size="25" Expression="[NITF]" DefaultValue="&quot;&quot;"/>
+        <CommandParameter Name="CTAI" DataType="3" Size="16" Expression="[CTAI]" DefaultValue="&quot;&quot;"/>
+        <CommandParameter Name="CTAF" DataType="22" Size="16" Expression="[CTAF]" DefaultValue="&quot;&quot;"/>
+        <CommandParameter Name="COMPAÑIA" DataType="22" Size="150" Expression="[COMPAÑIA]" DefaultValue="&quot;&quot;"/>
+        <CommandParameter Name="CORTE" DataType="22" Size="15" Expression="[CORTE]" DefaultValue="&quot;&quot;"/>
+        <CommandParameter Name="ESTILO" DataType="22" Size="2" Expression="[ESTILO]" DefaultValue="&quot;&quot;"/>
+        <CommandParameter Name="Grupo" DataType="22" Size="20" Expression="[Grupo]" DefaultValue="&quot;&quot;"/>
+        <CommandParameter Name="DETRES" DataType="3" Size="1" Expression="[DETRES]" DefaultValue="&quot;&quot;"/>
+        <CommandParameter Name="ORDEN" DataType="3" Size="2" Expression="[ORDEN]" DefaultValue="&quot;&quot;"/>
+        <CommandParameter Name="GRUPOCENCO" DataType="3" Size="1" Expression="[GRUPOCENCO]" DefaultValue="&quot;&quot;"/>
+        <CommandParameter Name="CENCOINI" DataType="22" Size="16" Expression="[CENCOINI]" DefaultValue="&quot;&quot;"/>
+        <CommandParameter Name="CENCOFIN" DataType="22" Size="16" Expression="[CENCOFIN]" DefaultValue="&quot;&quot;"/>
+        <CommandParameter Name="Impresion" DataType="3" Size="3" Expression="[Impresion]" DefaultValue="&quot;&quot;"/>
+        <CommandParameter Name="BU" DataType="22" Size="25" Expression="[BU]" DefaultValue="&quot;&quot;"/>
+        <CommandParameter Name="Consolidado" DataType="3" Size="1" Expression="[CONSOLIDADO]" DefaultValue="&quot;&quot;"/>
+        <CommandParameter Name="Usuario" DataType="22" Expression="[USUARIO]" DefaultValue="&quot;&quot;"/>
+        <CommandParameter Name="General" DataType="3" Size="1" Expression="[GENERAL]" DefaultValue="&quot;&quot;"/>
+        <CommandParameter Name="IdReporte" DataType="5" Size="18" Expression="[IDREPORTE]" DefaultValue="11"/>
+      </TableDataSource>
+      <TableDataSource Name="Table1" Alias="Logo" DataType="System.Int32" Enabled="true" SelectCommand="Exec SpLogoEmpresa">
+        <Column Name="Iden" DataType="System.Int32"/>
+        <Column Name="Logo" DataType="System.Byte[]" BindableControl="Picture"/>
+      </TableDataSource>
+      <TableDataSource Name="Table2" Alias="SpSubRptBuSeleccionados" DataType="System.Int32" Enabled="true" SelectCommand="Exec SpSubRptBuSeleccionados&#13;&#10;@Bu=@Bu,&#13;&#10;@Consolidado=@Consolidado,&#13;&#10;@BuUsuario=@BuUsuario,&#13;&#10;@Usuario=@Usuario,&#13;&#10;@General=@General">
+        <Column Name="Cadena" DataType="System.String"/>
+        <Column Name="MuestraBu" DataType="System.String"/>
+        <Column Name="FechaCorte" DataType="System.String"/>
+        <Column Name="UnidadNegocio" DataType="System.String"/>
+        <Column Name="MonedaSesion" DataType="System.String"/>
+        <Column Name="NombreLibro" DataType="System.String"/>
+        <CommandParameter Name="Bu" DataType="22" Size="25" Expression="[BU]"/>
+        <CommandParameter Name="Consolidado" DataType="3" Size="1" Expression="[CONSOLIDADO]"/>
+        <CommandParameter Name="BuUsuario" DataType="3" Size="1" Expression="[BuUsuario]"/>
+        <CommandParameter Name="Usuario" DataType="22" Expression="[USUARIO]"/>
+        <CommandParameter Name="General" DataType="3" Size="1" Expression="[GENERAL]"/>
+      </TableDataSource>
+      <TableDataSource Name="Table4" Alias="datosEmpresa" DataType="System.Int32" Enabled="true" SelectCommand="EXEC SpDatosEmpresa">
+        <Column Name="Nombre" DataType="System.String"/>
+        <Column Name="Nit" DataType="System.String"/>
+        <Column Name="Direccion" DataType="System.String"/>
+        <Column Name="Telefono" DataType="System.String"/>
+        <Column Name="Corte" DataType="System.String"/>
+      </TableDataSource>
+    </MsSqlDataConnection>
+    <Parameter Name="DatosImpresion" DataType="System.String" Expression="&quot;Corte: &quot;+[CORTE]+&quot; - &quot;+&quot;Fecha: &quot; + FormatDateTime([Date],&quot;Short Date&quot;) + &quot;   -   &quot; + &quot;Hora: &quot; + Format(&quot;{0:hh:mm tt}&quot;, DateTime.Now) + &quot;      &quot;"/>
+    <Parameter Name="Fecha" DataType="System.String" Expression="&quot;Fecha Inicial: &quot; + [FECHAI] + &quot; - Fecha Final: &quot; + [FECHAF]"/>
+    <Parameter Name="FECHAI" DataType="System.String" Expression="&quot;2011/01/01&quot;"/>
+    <Parameter Name="FECHAF" DataType="System.String" Expression="&quot;2011/01/31&quot;"/>
+    <Parameter Name="NITI" DataType="System.String" Expression="&quot;&quot;"/>
+    <Parameter Name="NITF" DataType="System.String" Expression="&quot;zzzzzzzzzzzzzzzzzzzzzzzzz&quot;"/>
+    <Parameter Name="CTAI" DataType="System.String" Expression="&quot;&quot;"/>
+    <Parameter Name="CTAF" DataType="System.String" Expression="&quot;zzzzzzzzzzzzzzzz&quot;"/>
+    <Parameter Name="COMPAÑIA" DataType="System.String" Expression="&quot;Zeus&quot;"/>
+    <Parameter Name="CORTE" DataType="System.String" Expression="&quot;2012/10/28&quot;"/>
+    <Parameter Name="ESTILO" DataType="System.String" Expression="&quot;P&quot;"/>
+    <Parameter Name="Grupo" DataType="System.String" Expression="&quot;Tercero-Cuenta&quot;"/>
+    <Parameter Name="DETRES" DataType="System.String" Expression="&quot;D&quot;"/>
+    <Parameter Name="ORDEN" DataType="System.String" Expression="&quot;CT&quot;"/>
+    <Parameter Name="GRUPOCENCO" DataType="System.String" Expression="&quot;S&quot;"/>
+    <Parameter Name="CENCOINI" DataType="System.String" Expression="&quot; &quot;"/>
+    <Parameter Name="CENCOFIN" DataType="System.String" Expression="&quot;zzzzzzzzzzzzzzzz&quot;"/>
+    <Parameter Name="Impresion" DataType="System.String" Expression="&quot;TCM&quot;"/>
+    <Parameter Name="Ter" DataType="System.String"/>
+    <Parameter Name="Cta" DataType="System.String"/>
+    <Parameter Name="AUXCCO" DataType="System.String"/>
+    <Parameter Name="SaldoTer" DataType="System.String"/>
+    <Parameter Name="DB" DataType="System.String" Expression="FormatNumber([TDebitos])"/>
+    <Parameter Name="CR" DataType="System.String" Expression="FormatNumber([TCreditos])"/>
+    <Parameter Name="Titulo" DataType="System.String"/>
+    <Parameter Name="Impresora" DataType="System.String" Expression="&quot;L&quot;"/>
+    <Parameter Name="BU" DataType="System.String" Expression="&quot;Local&quot;"/>
+    <Parameter Name="CONSOLIDADO" DataType="System.String" Expression="&quot;S&quot;"/>
+    <Parameter Name="USUARIO" DataType="System.String" Expression="&quot;ZEUSSQL&quot;"/>
+    <Parameter Name="GENERAL" DataType="System.String" Expression="&quot;N&quot;"/>
+    <Parameter Name="IDREPORTE" DataType="System.Int32" Expression="11"/>
+    <Parameter Name="BuUsuario" DataType="System.String" Expression="&quot;N&quot;"/>
+    <Parameter Name="RptMuestraBu" DataType="System.String" Expression="&quot;&quot;"/>
+    <Parameter Name="Titulo" DataType="System.String"/>
+    <Total Name="TDebitos" Expression="[Query.DEBITOS]" Evaluator="Detalle" PrintOn="Foot_Grupo2" IncludeInvisibleRows="true"/>
+    <Total Name="TCreditos" Expression="[Query.CREDITOS]" Evaluator="Detalle" PrintOn="Foot_Grupo2" IncludeInvisibleRows="true"/>
+    <Total Name="TDebitos_a" Expression="[Query.DEBITOS]" Evaluator="Detalle" PrintOn="Foot_Grupo2_a" IncludeInvisibleRows="true"/>
+    <Total Name="TCreditos_a" Expression="[Query.CREDITOS]" Evaluator="Detalle" PrintOn="Foot_Grupo2_a" IncludeInvisibleRows="true"/>
+    <Total Name="TDebitosG" Expression="[Query.DEBITOS]" Evaluator="Detalle" PrintOn="Foot_Grupo1" IncludeInvisibleRows="true"/>
+    <Total Name="TCreditosG" Expression="[Query.CREDITOS]" Evaluator="Detalle" PrintOn="Foot_Grupo1" IncludeInvisibleRows="true"/>
+    <Total Name="TDebitosCCO" Expression="[Query.DEBITOS]" Evaluator="Detalle" PrintOn="Foot_CentroCosto" IncludeInvisibleRows="true"/>
+    <Total Name="TCreditosCCO" Expression="[Query.CREDITOS]" Evaluator="Detalle" PrintOn="Foot_CentroCosto" IncludeInvisibleRows="true"/>
+    <Total Name="TDebitosCCO_a" Expression="[Query.DEBITOS]" Evaluator="Detalle" PrintOn="Foot_CentroCosto_a" IncludeInvisibleRows="true"/>
+    <Total Name="TCreditosCCO_a" Expression="[Query.CREDITOS]" Evaluator="Detalle" PrintOn="Foot_CentroCosto_a" IncludeInvisibleRows="true"/>
+    <Total Name="TAnterior" Expression="[Query.SaldoAnterior]" Evaluator="Detalle" PrintOn="Foot_Grupo2_a" IncludeInvisibleRows="true"/>
+    <Total Name="TAnterior_a" Expression="[Query.SaldoAnterior]" Evaluator="Detalle" PrintOn="Foot_Grupo1" IncludeInvisibleRows="true"/>
+  </Dictionary>
+  <inherited Name="Page1" LeftMargin="9" RightMargin="9">
+    <inherited Name="page_header_base" Width="748.06" Height="90.72" BeforePrintEvent="page_header_base_BeforePrint" AfterPrintEvent="page_header_base_AfterPrint" Guides="60.48,45.36,30.24">
+      <inherited Name="zeus_logo" Left="642.6" Width="105.84" Height="30.24"/>
+      <inherited Name="fecha_base" Left="540.54" Top="30.24" Width="102.06" HorzAlign="Right"/>
+      <inherited Name="fecha_data" Left="642.6" Top="30.24" Width="105.84"/>
+      <inherited Name="pagina_base" Left="540.54" Top="15.12" Width="102.06" HorzAlign="Right"/>
+      <inherited Name="pagina_data" Left="642.6" Top="15.12" Width="105.84"/>
+      <inherited Name="hora_base" Left="540.54" Top="45.36" Width="102.06" HorzAlign="Right"/>
+      <inherited Name="hora_data" Left="642.6" Top="45.36" Width="105.84"/>
+      <inherited Name="empresa_logo"/>
+      <inherited Name="txt_nit" Left="151.2" Top="30.24" Width="389.34" Height="15.12" Fill.Color="Transparent" Font="Courier New, 9pt, style=Bold"/>
+      <inherited Name="Text1" Left="540.54" Top="60.48" Width="102.06" HorzAlign="Right"/>
+      <inherited Name="Text2" Left="642.6" Top="60.48" Width="105.84"/>
+      <inherited Name="MemoBU" Left="151.2" Top="75.6" Width="389.34" Height="15.12" Font="Courier New, 7pt"/>
+      <inherited Name="Text6" Left="151.2" Width="389.34" Height="30.24" VertAlign="Center" Font="Courier New, 10pt, style=Bold"/>
+      <inherited Name="Text7" Left="151.2" Top="60.48" Width="389.34" Height="15.12" Text="[Fecha]" Font="Courier New, 7pt"/>
+      <inherited Name="Text8" Left="151.2" Top="30.24" Width="389.34" Height="15.12" Visible="false" VertAlign="Top" Font="Courier New, 7pt"/>
+      <inherited Name="banda_titulo" Top="94.29" Width="748.06" Height="15.12">
+        <inherited Name="Text5" Left="151.2" Width="389.34" Height="15.12" Font="Courier New, 7pt, style=Bold"/>
+        <inherited Name="Child1" Top="112.98" Width="748.06">
+          <inherited Name="MemoLinea" Width="748.44"/>
+          <inherited Name="Child2" Top="116.55" Width="748.06" CanGrow="true">
+            <inherited Name="Text4"/>
+            <inherited Name="BuSeleccionados" Width="623.7" Text="[SpSubRptBuSeleccionados.Cadena]"/>
+            <ChildBand Name="Head_Resumido" ZOrder="-1" Top="135.25" Width="748.06" Height="15.12">
+              <TextObject Name="Memo5" Width="94.5" Height="15.12" Padding="0, 2, 1, 1" WordWrap="false" Font="Courier New, 7pt, style=Bold"/>
+              <TextObject Name="fcMemo49" Width="748.44" Height="15.12" Border.Lines="All" Padding="0, 2, 1, 1" Font="Courier New, 7pt, style=Bold"/>
+              <TextObject Name="Memo8" Left="332.64" Width="105.84" Height="15.12" Visible="false" Text="Saldo Anterior" Padding="0, 2, 1, 1" HorzAlign="Right" Font="Courier New, 7pt, style=Bold"/>
+              <TextObject Name="Memo9" Left="438.48" Width="102.06" Height="15.12" Text="Débito" Padding="0, 2, 1, 1" HorzAlign="Right" Font="Courier New, 7pt, style=Bold"/>
+              <TextObject Name="Memo10" Left="540.54" Width="102.06" Height="15.12" Text="Crédito" Padding="0, 2, 1, 1" HorzAlign="Right" Font="Courier New, 7pt, style=Bold"/>
+              <TextObject Name="Memo11" Left="642.6" Width="105.72" Height="15.12" Text="Saldo Final" Padding="0, 2, 1, 1" HorzAlign="Right" Font="Courier New, 7pt, style=Bold"/>
+            </ChildBand>
+          </inherited>
+        </inherited>
+      </inherited>
+    </inherited>
+    <GroupHeaderBand Name="Head_Grupo1" ZOrder="0" Top="153.94" Width="748.06" Height="15.12" RepeatOnEveryPage="true" Condition="Trim([Query.Grupo1])" SortOrder="None">
+      <TextObject Name="TxtGrupo1" Width="94.5" Height="15.12" Padding="0, 2, 1, 1" Font="Courier New, 7pt"/>
+      <TextObject Name="NomGrupo1" Left="257.21" Width="283.33" Height="15.12" Padding="0, 2, 1, 1" Format="Number" Format.UseLocale="true" WordWrap="false" Font="Courier New, 7pt"/>
+      <TextObject Name="CodGrupo1" Left="94.5" Width="162.92" Height="15.12" Padding="0, 2, 1, 1" HorzAlign="Right" Font="Courier New, 7pt"/>
+      <TextObject Name="Text606" Left="642.6" Width="105.84" Height="15.12" Visible="false" Padding="0, 2, 1, 1" Format="Number" Format.UseLocale="true" HorzAlign="Right" WordWrap="false" Font="Courier New, 7pt"/>
+      <TextObject Name="Text607" Left="540.54" Width="102.06" Height="15.12" Visible="false" Padding="0, 2, 1, 1" HorzAlign="Right" Font="Courier New, 7pt"/>
+      <GroupHeaderBand Name="Head_Grupo2" Top="172.63" Width="748.06" Height="15.12" Visible="false" RepeatOnEveryPage="true" Condition="Trim([Query.Grupo2])" SortOrder="None">
+        <TextObject Name="TxtGrupo2" Width="94.5" Height="15.12" Padding="0, 2, 1, 1" Font="Courier New, 7pt"/>
+        <TextObject Name="NomGrupo2" Left="257.21" Width="283.33" Height="15.12" Padding="0, 2, 1, 1" Format="Number" Format.UseLocale="true" WordWrap="false" Font="Courier New, 7pt"/>
+        <TextObject Name="CodGrupo2" Left="94.5" Width="162.92" Height="15.12" Padding="0, 2, 1, 1" HorzAlign="Right" Font="Courier New, 7pt"/>
+        <TextObject Name="Text21" Left="540.54" Width="102.06" Height="15.12" Visible="false" Text="Saldo Anterior :" Padding="0, 2, 1, 1" HorzAlign="Right" Font="Courier New, 7pt"/>
+        <TextObject Name="Text22" Left="642.6" Width="105.84" Height="15.12" Visible="false" Text="[Query.SaldoAnterior]" Padding="0, 2, 1, 1" Format="Number" Format.UseLocale="true" HorzAlign="Right" WordWrap="false" Font="Courier New, 7pt"/>
+        <ChildBand Name="Head_Grupo2_b" Top="191.32" Width="748.06" Height="15.12" Visible="false" BeforePrintEvent="Child2_BeforePrint">
+          <TextObject Name="fcMemo35" Width="748.35" Height="15.12" Border.Lines="All" Padding="0, 2, 1, 1" Font="Courier New, 7pt, style=Bold"/>
+          <TextObject Name="Memo13" Width="94.5" Height="15.12" Text="Fte-Documento" Padding="0, 2, 1, 1" WordWrap="false" Font="Courier New, 7pt, style=Bold"/>
+          <TextObject Name="Memo17" Left="438.48" Width="102.06" Height="15.12" Text="Débito" Padding="0, 2, 1, 1" HorzAlign="Right" Font="Courier New, 7pt, style=Bold"/>
+          <TextObject Name="Memo18" Left="540.54" Width="102.06" Height="15.12" Text="Crédito" Padding="0, 2, 1, 1" HorzAlign="Right" Font="Courier New, 7pt, style=Bold"/>
+          <TextObject Name="Memo14" Left="94.5" Width="162.92" Height="15.12" Text="Descripción" Padding="0, 2, 1, 1" WordWrap="false" Font="Courier New, 7pt, style=Bold"/>
+          <TextObject Name="Memo15" Left="257.21" Width="75.43" Height="15.12" Text="Fecha" Padding="0, 2, 1, 1" WordWrap="false" Font="Courier New, 7pt, style=Bold"/>
+          <TextObject Name="Memo19" Left="642.96" Width="105.36" Height="15.12" Text="Saldo" Padding="0, 2, 1, 1" HorzAlign="Right" Font="Courier New, 7pt, style=Bold"/>
+          <TextObject Name="Text23" Left="332.64" Width="105.84" Height="15.12" Text="CCO / AUX" Padding="0, 2, 1, 1" WordWrap="false" Font="Courier New, 7pt, style=Bold"/>
+        </ChildBand>
+        <GroupHeaderBand Name="Head_CentroCosto" Top="210.01" Width="748.06" Height="15.12" Visible="false" RepeatOnEveryPage="true" Condition="[Query.IDCENCO]" SortOrder="None">
+          <TextObject Name="CodCentroCosto" Left="94.5" Width="162.54" Height="15.12" Text="[Query.IDCENCO]" Padding="0, 2, 1, 1" HorzAlign="Right" Font="Courier New, 7pt"/>
+          <TextObject Name="TxtCentroCosto" Width="94.5" Height="15.12" Text="Centro de Costo :" Padding="0, 2, 1, 1" Font="Courier New, 6pt"/>
+          <TextObject Name="NomCentroCosto" Left="257.04" Width="283.5" Height="15.12" Text="[Query.DESCENCO]" Padding="0, 2, 1, 1" Font="Courier New, 7pt"/>
+          <ChildBand Name="Head_CentroCosto_a" Top="228.7" Width="748.06" Height="15.12" Visible="false">
+            <TextObject Name="fcMemo36" Width="748.35" Height="15.12" Border.Lines="All" Padding="0, 2, 1, 1" Font="Courier New, 7pt, style=Bold"/>
+            <TextObject Name="Text_7" Width="94.5" Height="15.12" Text="Fte-Documento" Padding="0, 2, 1, 1" WordWrap="false" Font="Courier New, 7pt, style=Bold"/>
+            <TextObject Name="Text_8" Left="94.5" Width="268.38" Height="15.12" Text="Descripción" Padding="0, 2, 1, 1" WordWrap="false" Font="Courier New, 7pt, style=Bold"/>
+            <TextObject Name="Text9" Left="362.88" Width="75.6" Height="15.12" Text="Fecha" Padding="0, 2, 1, 1" WordWrap="false" Font="Courier New, 7pt, style=Bold"/>
+            <TextObject Name="Text11" Left="438.48" Width="102.06" Height="15.12" Text="Débito" Padding="0, 2, 1, 1" HorzAlign="Right" Font="Courier New, 7pt, style=Bold"/>
+            <TextObject Name="Text12" Left="540.54" Width="102.06" Height="15.12" Text="Crédito" Padding="0, 2, 1, 1" HorzAlign="Right" Font="Courier New, 7pt, style=Bold"/>
+            <TextObject Name="Text13" Left="642.63" Width="105.8" Height="15.12" Text="Saldo" Padding="0, 2, 1, 1" HorzAlign="Right" Font="Courier New, 7pt, style=Bold"/>
+          </ChildBand>
+          <DataBand Name="Detalle" Top="247.39" Width="748.06" Height="15.12" Visible="false" BeforePrintEvent="Detalle_BeforePrint" AfterPrintEvent="MasterData1_AfterPrint" DataSource="Table">
+            <TextObject Name="fddMemo52" Width="748.35" Height="15.12" Border.Lines="All" Border.Color="Gray" Padding="0, 2, 1, 1" WordWrap="false" Font="Courier New, 7pt"/>
+            <TextObject Name="Memo177" Width="94.5" Height="15.12" Text="[Query.IDFUENTE]-[Query.NUMDOCTRA]" Padding="0, 2, 1, 1" WordWrap="false" Font="Courier New, 7pt"/>
+            <TextObject Name="Memo188" Left="94.5" Width="162.92" Height="15.12" Text="[Query.DESCRITRA]" Padding="0, 2, 6, 1" WordWrap="false" Font="Courier New, 7pt"/>
+            <TextObject Name="Memo199" Left="257.04" Width="75.6" Height="15.12" Text="[Query.FECHATRA]" Padding="0, 2, 1, 1" WordWrap="false" Font="Courier New, 7pt"/>
+            <TextObject Name="Memo21" Left="438.48" Width="102.06" Height="15.12" Text="[Query.DEBITOS]" Padding="0, 2, 1, 1" Format="Number" Format.UseLocale="true" HorzAlign="Right" WordWrap="false" Font="Courier New, 7pt"/>
+            <TextObject Name="Memo22" Left="540.54" Width="102.06" Height="15.12" Text="[Abs([Query.CREDITOS])]" Padding="0, 2, 1, 1" Format="Number" Format.UseLocale="true" HorzAlign="Right" WordWrap="false" Font="Courier New, 7pt"/>
+            <TextObject Name="Memo23" Left="642.6" Width="105.84" Height="15.12" Text="[Query.SaldoAnteriorAcuG1G2]" Padding="0, 2, 1, 1" Format="Number" Format.UseLocale="true" HorzAlign="Right" WordWrap="false" Font="Courier New, 7pt"/>
+            <TextObject Name="Text27" Left="332.64" Width="105.84" Height="15.12" Text="[Query.CCOAUX]" Padding="0, 2, 1, 1" WordWrap="false" Font="Courier New, 7pt"/>
+            <ChildBand Name="DetalleCCO" Top="266.09" Width="748.06" Height="15.12" Visible="false" BeforePrintEvent="DetalleCCO_BeforePrint">
+              <TextObject Name="Text44" Left="0.09" Width="748.35" Height="15.12" Border.Lines="All" Border.Color="Gray" Padding="0, 2, 1, 1" WordWrap="false" Font="Courier New, 7pt"/>
+              <TextObject Name="Text24" Width="94.5" Height="15.12" Text="[Query.IDFUENTE]-[Query.NUMDOCTRA]" Padding="0, 2, 1, 1" WordWrap="false" Font="Courier New, 7pt"/>
+              <TextObject Name="Text25" Left="94.5" Width="268.38" Height="15.12" Text="[Query.DESCRITRA]" Padding="0, 2, 6, 1" WordWrap="false" Font="Courier New, 7pt"/>
+              <TextObject Name="Text26" Left="362.88" Width="75.6" Height="15.12" Text="[Query.FECHATRA]" Padding="0, 2, 1, 1" WordWrap="false" Font="Courier New, 7pt"/>
+              <TextObject Name="Text28" Left="438.48" Width="102.06" Height="15.12" Text="[Query.DEBITOS]" Padding="0, 2, 1, 1" Format="Number" Format.UseLocale="true" HorzAlign="Right" WordWrap="false" Font="Courier New, 7pt"/>
+              <TextObject Name="Text29" Left="540.54" Width="102.06" Height="15.12" Text="[Abs([Query.CREDITOS])]" Padding="0, 2, 1, 1" Format="Number" Format.UseLocale="true" HorzAlign="Right" WordWrap="false" Font="Courier New, 7pt"/>
+              <TextObject Name="Text30" Left="642.6" Width="105.84" Height="15.12" Text="[([Query.DEBITOS] + [Query.CREDITOS])]" Padding="0, 2, 1, 1" Format="Number" Format.UseLocale="true" HorzAlign="Right" WordWrap="false" Font="Courier New, 7pt"/>
+            </ChildBand>
+          </DataBand>
+          <GroupFooterBand Name="Foot_CentroCosto" Top="284.78" Width="748.06" Height="15.12" Visible="false" BeforePrintEvent="PieCENCO_BeforePrint">
+            <TextObject Name="Text_5" Left="438.48" Width="102.06" Height="15.12" Text="[TDebitosCCO]" Padding="0, 2, 1, 1" Format="Number" Format.UseLocale="true" HorzAlign="Right" WordWrap="false" Font="Courier New, 7pt"/>
+            <TextObject Name="Text600" Left="540.54" Width="102.06" Height="15.12" Text="[Abs(ToDouble([TCreditosCCO]))]" Padding="0, 2, 1, 1" Format="Number" Format.UseLocale="true" HorzAlign="Right" WordWrap="false" Font="Courier New, 7pt"/>
+            <TextObject Name="TxtTotalGrupoCentro" Width="438.48" Height="15.12" Padding="0, 2, 1, 1" Font="Courier New, 7pt"/>
+            <TextObject Name="Text19" Left="642.61" Width="105.83" Height="15.12" Text="[([TDebitosCCO] + [TCreditosCCO])]" Padding="0, 2, 1, 1" Format="Number" Format.UseLocale="true" HorzAlign="Right" WordWrap="false" Font="Courier New, 7pt"/>
+            <ChildBand Name="Foot_CentroCosto_a" Top="303.47" Width="748.06" Height="15.12" Visible="false" PrintIfDatabandEmpty="true">
+              <TextObject Name="Text42" Left="0.09" Width="748.35" Height="15.12" Border.Lines="All" Border.Color="Gray" Padding="0, 2, 1, 1" WordWrap="false" Font="Courier New, 7pt"/>
+              <TextObject Name="Text31" Width="94.5" Height="15.12" Text="[Query.IDCENCO]" Padding="0, 2, 1, 1" Font="Courier New, 7pt"/>
+              <TextObject Name="Text32" Left="94.5" Width="343.98" Height="15.12" Text="[Query.DESCENCO]" Padding="0, 2, 1, 1" Font="Courier New, 7pt"/>
+              <TextObject Name="Text36" Left="438.48" Width="102.06" Height="15.12" Text="[TDebitosCCO_a]" Padding="0, 2, 1, 1" Format="Number" Format.UseLocale="true" HorzAlign="Right" WordWrap="false" Font="Courier New, 7pt"/>
+              <TextObject Name="Text37" Left="540.54" Width="102.06" Height="15.12" Text="[Abs(ToDouble([TCreditosCCO_a]))]" Padding="0, 2, 1, 1" Format="Number" Format.UseLocale="true" HorzAlign="Right" WordWrap="false" Font="Courier New, 7pt"/>
+              <TextObject Name="Text38" Left="642.6" Width="105.84" Height="15.12" Text="[([TDebitosCCO_a] + [TCreditosCCO_a])]" Padding="0, 2, 1, 1" Format="Number" Format.UseLocale="true" HorzAlign="Right" WordWrap="false" Font="Courier New, 7pt"/>
+            </ChildBand>
+          </GroupFooterBand>
+        </GroupHeaderBand>
+        <GroupFooterBand Name="Foot_Grupo2" Top="322.16" Width="748.06" Height="22.68" Visible="false" BeforePrintEvent="GroupFooter2_BeforePrint">
+          <TextObject Name="TxtTotalGrupo2" Width="438.48" Height="15.12" Padding="0, 2, 1, 1" WordWrap="false" Font="Courier New, 7pt"/>
+          <TextObject Name="Memo25" Left="438.48" Width="102.06" Height="15.12" Text="[TDebitos]" Padding="0, 2, 1, 1" Format="Number" Format.UseLocale="true" HorzAlign="Right" WordWrap="false" Font="Courier New, 7pt"/>
+          <TextObject Name="Memo26" Left="540.54" Width="102.06" Height="15.12" Text="[Abs(ToDouble([TCreditos]))]" Padding="0, 2, 1, 1" Format="Number" Format.UseLocale="true" HorzAlign="Right" WordWrap="false" Font="Courier New, 7pt"/>
+          <TextObject Name="Memo27" Left="642.6" Width="105.84" Height="15.12" Text="[Query.SaldoAnteriorAcuG1G2]" Padding="0, 2, 1, 1" Format="Number" Format.UseLocale="true" HorzAlign="Right" WordWrap="false" Font="Courier New, 7pt"/>
+          <TextObject Name="Text608" Top="15.12" Width="748.44" Height="7.56" Padding="0, 2, 1, 1" WordWrap="false" Font="Courier New, 7pt"/>
+          <ChildBand Name="Foot_Grupo2_a" Top="348.41" Width="748.06" Height="15.12" Visible="false" PrintIfDatabandEmpty="true">
+            <TextObject Name="Text43" Left="0.09" Width="748.35" Height="15.12" Border.Lines="All" Border.Color="Gray" Padding="0, 2, 1, 1" WordWrap="false" Font="Courier New, 7pt"/>
+            <TextObject Name="Text34" Width="94.5" Height="15.12" Padding="0, 2, 1, 1" WordWrap="false" Font="Courier New, 7pt"/>
+            <TextObject Name="Text35" Left="94.5" Width="238.14" Height="15.12" Padding="0, 2, 1, 1" WordWrap="false" Font="Courier New, 7pt"/>
+            <TextObject Name="Text39" Left="642.6" Width="105.84" Height="15.12" Text="[Query.SaldoAnteriorAcuG1G2]" Padding="0, 2, 1, 1" Format="Number" Format.UseLocale="true" HorzAlign="Right" WordWrap="false" Font="Courier New, 7pt"/>
+            <TextObject Name="Text40" Left="540.54" Width="102.06" Height="15.12" Text="[Abs(ToDouble([TCreditos_a]))]" Padding="0, 2, 1, 1" Format="Number" Format.UseLocale="true" HorzAlign="Right" WordWrap="false" Font="Courier New, 7pt"/>
+            <TextObject Name="Text41" Left="438.48" Width="102.06" Height="15.12" Text="[TDebitos_a]" Padding="0, 2, 1, 1" Format="Number" Format.UseLocale="true" HorzAlign="Right" WordWrap="false" Font="Courier New, 7pt"/>
+            <TextObject Name="Text604" Left="332.64" Width="105.84" Height="15.12" Visible="false" Text="[TAnterior]" Padding="0, 2, 1, 1" Format="Number" Format.UseLocale="true" HorzAlign="Right" WordWrap="false" Font="Courier New, 7pt"/>
+          </ChildBand>
+        </GroupFooterBand>
+      </GroupHeaderBand>
+      <GroupFooterBand Name="Foot_Grupo1" Top="367.1" Width="748.06" Height="26.46" BeforePrintEvent="GroupFooter1_BeforePrint" AfterPrintEvent="GroupFooter1_AfterPrint">
+        <TextObject Name="TxtTotalGrupo1" Width="332.64" Height="15.12" Padding="0, 2, 1, 1" WordWrap="false" Font="Courier New, 7pt"/>
+        <TextObject Name="Memo29" Left="438.48" Width="102.06" Height="15.12" Text="[TDebitosG]" Padding="0, 2, 1, 1" Format="Number" Format.UseLocale="true" HorzAlign="Right" WordWrap="false" Font="Courier New, 7pt"/>
+        <TextObject Name="Memo30" Left="540.54" Width="102.06" Height="15.12" Text="[Abs(ToDouble([TCreditosG]))]" Padding="0, 2, 1, 1" Format="Number" Format.UseLocale="true" HorzAlign="Right" WordWrap="false" Font="Courier New, 7pt"/>
+        <TextObject Name="SysMemo1" Left="642.6" Width="105.84" Height="15.12" Text="[Query.SaldoAnteriorAcuG1]" Padding="0, 2, 1, 1" HorzAlign="Right" WordWrap="false" Font="Courier New, 7pt">
+          <Formats>
+            <NumberFormat/>
+            <GeneralFormat/>
+          </Formats>
+        </TextObject>
+        <TextObject Name="Text603" Top="15.12" Width="748.44" Height="11.34" Padding="0, 2, 1, 1" WordWrap="false" Font="Courier New, 7pt"/>
+        <TextObject Name="Text605" Left="332.64" Width="105.84" Height="15.12" Visible="false" Text="[TAnterior_a]" Padding="0, 2, 1, 1" Format="Number" Format.UseLocale="true" HorzAlign="Right" WordWrap="false" Font="Courier New, 7pt"/>
+      </GroupFooterBand>
+    </GroupHeaderBand>
+  </inherited>
+</inherited>

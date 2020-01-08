@@ -1,0 +1,941 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Report ScriptLanguage="CSharp" DoublePass="true" StartReportEvent="_StartReport" ReportInfo.Created="02/25/2013 12:16:18" ReportInfo.Modified="09/07/2017 16:00:11" ReportInfo.CreatorVersion="1.5.1.0">
+  <ScriptText>using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Windows.Forms;
+using System.Drawing;
+using System.Data;
+using FastReport;
+using FastReport.Data;
+using FastReport.Dialog;
+using FastReport.Barcode;
+using FastReport.Table;
+using FastReport.Utils;
+
+namespace FastReport
+{
+  
+  public class ReportScript
+  {
+ 
+    Decimal Subtotal;   
+    String Usuario_Fhe = &quot;&quot;;
+    String Leyenda = &quot;&quot;;
+    String PObservaciones = &quot;&quot;;
+    String DocumentoNuevo = &quot;&quot;;
+    String DocumentoActual = &quot;&quot;;
+    int contDocumento = 0;
+    int PaginaTotal = 0;
+    int PaginaDocumento = 0;     
+    ArrayList TotalPages;
+    ArrayList Pages;
+    bool Termino = false;
+    int concep = 0;
+    int contSubTotales = 0;
+
+    private void quitarEstilos(ObjectCollection Objectos) {
+     
+      foreach (Base item in Report.AllObjects) {
+        
+        /*ShapeObject*/
+        if (item is ShapeObject)
+          ((ShapeObject)item).Visible = false;
+      
+        /*LineObject*/
+        if (item is LineObject)
+          ((LineObject)item).Visible = false;
+        
+        /*TextObject*/
+        if (item is TextObject)
+          ((TextObject)item).Style = &quot;FuenteMatriz&quot;;
+        
+        /*PictureObject*/
+        if (item is PictureObject)
+          ((PictureObject)item).Visible = false;
+        
+      }
+
+    }
+    
+    private void cambiarEstilos(int style) {
+      
+      foreach (Base item in Report.AllObjects) {
+        
+        /*TextObject*/
+        if (item is TextObject) {
+          
+          if (item.Name.StartsWith(&quot;fc&quot;)) {
+            ((TextObject)item).Style = &quot;FondoCabecera&quot; + style;
+          } else if (item.Name.StartsWith(&quot;fd3&quot;)) {
+            ((TextObject)item).Style = &quot;BarraColorDos&quot; + style;
+            ((TextObject)item).EvenStyle = &quot;BarraColor&quot; + style;
+          } else if (item.Name.StartsWith(&quot;fd2&quot;) || item.Name.StartsWith(&quot;fdd&quot;)) {
+            //((TextObject)item).Style = &quot;BarraColorDos&quot; + style;
+          } else if (item.Name.StartsWith(&quot;fd&quot;)) {
+            ((TextObject)item).Style = &quot;BarraColor&quot; + style;
+          }
+        }       
+      }
+    }
+    
+    private void _StartReport(object sender, EventArgs e)
+    {
+      if(((String)Report.GetParameterValue(&quot;Impresora&quot;))==&quot;M&quot;) {
+        quitarEstilos(Report.AllObjects);
+      }else {
+        cambiarEstilos(((String)Report.GetParameterValue(&quot;Estilo&quot;))==&quot;N&quot;?0:1);
+      }
+      TotalPages = new ArrayList();
+      Pages = new ArrayList();
+      /*if(ToString(Report.GetColumnValue(&quot;Query.MuestraVbles&quot;))==&quot;N&quot;){
+        Child2.Visible = false;
+        Subreport1.Visible = false;
+      }else{
+        Child2.Visible = true;
+        Subreport1.Visible = true;
+      }*/         
+      //GroupFooter2.Visible = (ToInt32(Report.GetColumnValue(&quot;Query.NumeroCuotasFactura&quot;))&gt;5);
+    }  
+       
+    private void MasterData1_BeforePrint(object sender, EventArgs e)
+    {
+      Usuario_Fhe = ((String)Report.GetColumnValue(&quot;Query.USUARIO_FHE&quot;));
+      Leyenda = ToString(Report.GetColumnValue(&quot;Query.Leyenda&quot;));
+      PObservaciones = ToString(Report.GetColumnValue(&quot;Query.PObservaciones&quot;));
+      if((Int32)Report.GetColumnValue(&quot;Query.TotalConcep&quot;) == (Int32)Report.GetVariableValue(&quot;Row#&quot;) )
+      {
+        Termino = true;
+      }
+      else
+      {      
+        Child6.PrintOn = PrintOn.None;   
+      } 
+      if(Engine.FinalPass)
+      {
+        concep++;
+      }
+    }
+
+    private void MasterData2_BeforePrint(object sender, EventArgs e)
+    {
+      int TotFila = Report.GetTotalValue(&quot;NumSubtotales&quot;); 
+      /*if (TotFila == 6)
+      {
+        BOX4.Height = Convert.ToSingle(&quot;150.44&quot;);
+        BOX5.Height = Convert.ToSingle(&quot;150.44&quot;);
+        Text40.Height = BOX5.Height;
+        //Cuotas.Top = Convert.ToSingle(&quot;181.44&quot;);
+      }*/
+      
+      //MessageBox.Show(ToDecimal(Report.GetColumnValue(&quot;Query3.ValorTotalizador&quot;)).ToString());
+      if(ToInt32(Report.GetColumnValue(&quot;Query3.Totalizar&quot;))==1){
+        Subtotal += ToDecimal(Report.GetColumnValue(&quot;Query3.ValorTotalizador&quot;));
+        
+      }
+      
+    } 
+
+    private void GroupFooter1_AfterPrint(object sender, EventArgs e)
+    {
+      
+    }
+
+    private void Footer1_AfterPrint(object sender, EventArgs e)
+    {
+      Subtotal = 0;
+    }
+
+    private void Memo57_BeforePrint(object sender, EventArgs e)
+    {
+      //MessageBox.Show(ToString(Report.GetColumnValue(&quot;Query.PObservaciones&quot;)));
+      
+    } 
+
+    private void Child4_AfterPrint(object sender, EventArgs e)
+    {
+      //if(Trim(ToString(Report.GetColumnValue(&quot;Query.Concepto_Fhe&quot;)))==&quot;&quot;){
+        //BOX3.Height = Child4.Height + 21 + 5; //tamaño inicial + 5 al final
+      //}
+    }
+
+    private void Child5_BeforeLayout(object sender, EventArgs e)
+    {
+       //BOX3.Height = BOX3.Top + Child5.Top - 21; //tamaño inicial + 5 al final
+    } 
+
+    private void MasterData3_BeforePrint(object sender, EventArgs e)
+    { 
+      
+    }
+
+    private void GroupHeader3_BeforePrint(object sender, EventArgs e)
+    {
+      string Documento = ToString(Report.GetColumnValue(&quot;Query.Docum_Fhe&quot;));  
+      Termino = false;
+      Child2.Visible = true;
+      if(Engine.FirstPass)
+      {                   
+        if(!Documento.Equals(DocumentoActual))
+        {          
+          DocumentoActual = ToString(Report.GetColumnValue(&quot;Query.Docum_Fhe&quot;));            
+          TotalPages.Insert(contDocumento, PaginaDocumento - 1);                    
+          contDocumento ++;
+          PaginaDocumento = 1;          
+        } 
+        else
+        {
+          //MessageBox.Show(&quot;Tpag: &quot; + ToString(PaginaTotal) + &quot; Dpag: &quot; + ToString(PaginaDocumento) + &quot;DocA: &quot; + DocumentoActual + &quot;Doc: &quot; + Documento);
+        }
+      }
+      if(Engine.FinalPass)
+      {  
+        if(PaginaTotal == 1)
+        {
+          DocumentoActual = ToString(Report.GetColumnValue(&quot;Query.DOCUM_FHE&quot;));
+        }
+        if(!Documento.Equals(DocumentoActual))
+        {    
+          concep = 0;
+          DocumentoActual = ToString(Report.GetColumnValue(&quot;Query.Docum_Fhe&quot;));
+          contDocumento ++;     
+          Memo13.Text = &quot;1 de &quot; + ToString(TotalPages[contDocumento]);                      
+          PaginaDocumento = 1;    
+          
+        }
+        else
+        {
+          Memo13.Text = PaginaDocumento.ToString() + &quot; de &quot; + ToString(TotalPages[contDocumento]); 
+        }        
+      }
+      PaginaTotal ++;
+      PaginaDocumento ++;
+      
+      contSubTotales = 1;        
+      DataSourceBase SubTotales; 
+      SubTotales = Report.GetDataSource(&quot;Query3&quot;);
+      SubTotales.Init();
+      while (SubTotales.HasMoreRows)
+      { 
+        contSubTotales ++;
+        SubTotales.Next();
+      }
+      if (contSubTotales &gt;= 7)
+      {
+        double alto = 3.78 * 5;
+        alto = alto * contSubTotales;
+        BOX4.Height = Convert.ToSingle(alto);
+        BOX5.Height = Convert.ToSingle(alto);
+        Text39.Height = BOX5.Height;
+        //Cuotas.Top = Convert.ToSingle(&quot;181.44&quot;);
+        Child6.Height = Convert.ToSingle(alto) + Convert.ToSingle(&quot;124.74&quot;);
+        Cuotas.Top = Convert.ToSingle(alto) + Convert.ToSingle(&quot;41.58&quot;);
+      }
+    }
+
+    private void GroupFooter3_BeforePrint(object sender, EventArgs e)
+    {
+      int Query_NumeroCuotasFactura = ToInt32(Report.GetColumnValue(&quot;Query.NumeroCuotasFactura&quot;));
+      String FPDetallado = ToString(Report.GetParameterValue(&quot;FPDetallado&quot;));
+      
+      if((Query_NumeroCuotasFactura&gt;3) &amp;&amp; (FPDetallado==&quot;S&quot;))
+      {
+        GroupFooter3.Visible = true;
+      }
+      else
+      {
+        GroupFooter3.Visible = false;
+      }
+    } 
+
+    private void Page1_StartPage(object sender, EventArgs e)
+    {
+      if(Engine.FinalPass)
+      {  
+        TotalPages.Insert(contDocumento, PaginaDocumento - 1);          
+      }            
+      DocumentoNuevo = ToString(Report.GetColumnValue(&quot;Query.DOCUM_FHE&quot;));
+      DocumentoActual = ToString(Report.GetColumnValue(&quot;Query.DOCUM_FHE&quot;));
+      PaginaTotal = 1;
+      PaginaDocumento = 1;     
+      contDocumento = 0;  
+    }
+
+    private void GroupFooter2_BeforePrint(object sender, EventArgs e)
+    {
+      if(((Int32)Report.GetColumnValue(&quot;Query.TotalConcep&quot;))==concep)
+      {
+        if((Int32)TotalPages[contDocumento]&gt;1)
+        {                
+          if((Int32)Pages[contDocumento] == PaginaDocumento - 1)
+          {
+            Child6.PrintOn = Child1.PrintOn;
+            Child2.Visible = false;
+          }
+          else
+          {
+            Child6.PrintOn = GroupFooter1.PrintOn;
+            Child2.Visible = true;
+            GroupFooter2.Visible = false;
+          }
+        }
+        else
+        {         
+          Child6.PrintOn = GroupFooter1.PrintOn;
+        }
+      }
+      else
+      {
+        Child2.Visible = false;
+        Child5.Visible = false;
+      }
+    }
+
+    private void Child5_BeforePrint(object sender, EventArgs e)
+    {
+      if(((Int32)Report.GetColumnValue(&quot;Query.TotalConcep&quot;))==concep &amp;&amp; (Int32)Pages[contDocumento] == PaginaDocumento - 1  )
+      {
+        Child5.Visible = true;
+        GroupFooter2.Visible = true;
+      }
+      else
+      {
+        Child5.Visible = false;
+        if(((Int32)Report.GetColumnValue(&quot;Query.TotalConcep&quot;))==concep)
+        {
+          GroupFooter2.Visible = false;
+        }
+        else
+        {
+          GroupFooter2.Visible = true;
+        }
+      }
+    }
+
+    private void Child6_AfterPrint(object sender, EventArgs e)
+    {
+      if(Engine.FirstPass)
+      {
+        Pages.Insert(contDocumento, PaginaDocumento - 2);
+      }
+    }
+
+    private void Memo52_BeforePrint(object sender, EventArgs e)
+    {
+      String mFormaPago = Report.GetParameterValue(&quot;FormadePago&quot;).ToString();
+      if(!mFormaPago.Equals(&quot;Crédito&quot;)){
+        Memo52.Text = &quot;&quot;;
+      }else{
+        Memo52.Text = &quot;Fecha de Vencimiento&quot;;
+      } 
+    }
+
+    private void Memo55_BeforePrint(object sender, EventArgs e)
+    {
+      String mFormaPago = Report.GetParameterValue(&quot;FormadePago&quot;).ToString();
+      if(!mFormaPago.Equals(&quot;Crédito&quot;)){
+        Memo55.Text = &quot;&quot;;
+      }else{
+        Memo55.Text = &quot;[Vencimiento]&quot;;
+      } 
+    }
+
+    private void Text12_BeforePrint(object sender, EventArgs e)
+    {
+      String mFormaPago = Report.GetParameterValue(&quot;FormadePago&quot;).ToString();
+      if(!mFormaPago.Equals(&quot;Crédito&quot;)){
+        Text12.Text = &quot;&quot;;
+      }else{
+        Text12.Text = &quot;Fecha de Vencimiento&quot;;
+      } 
+    }
+
+    private void Text18_BeforePrint(object sender, EventArgs e)
+    {
+      String mFormaPago = Report.GetParameterValue(&quot;FormadePago&quot;).ToString();
+      if(!mFormaPago.Equals(&quot;Crédito&quot;)){
+        Text18.Text = &quot;&quot;;
+      }else{
+        Text18.Text = &quot;[Vencimiento2]&quot;;
+      } 
+    }
+  }
+}</ScriptText>
+  <Styles>
+    <Style Name="FondoCabecera0" ApplyTextFill="false" ApplyFont="false"/>
+    <Style Name="FondoCabecera1" Border.Lines="All" Border.Color="Gray" Border.Width="1.5" Fill.Color="Silver"/>
+    <Style Name="BarraColor0" Font="Courier New, 6.75pt" ApplyTextFill="false" ApplyFont="false"/>
+    <Style Name="BarraColor1" Border.Lines="All" Border.Color="Gray" Border.Width="1.5" Fill.Color="Gainsboro" ApplyTextFill="false" ApplyFont="false"/>
+    <Style Name="BarraColorDos0" Font="Courier New, 6.75pt" ApplyTextFill="false" ApplyFont="false"/>
+    <Style Name="BarraColorDos1" Border.Lines="All" Border.Color="Gray" Border.Width="1.5" ApplyTextFill="false" ApplyFont="false"/>
+    <Style Name="FuenteMatriz" Font="Tahoma, 6.75pt"/>
+  </Styles>
+  <Dictionary>
+    <MsSqlDataConnection Name="Connection" ConnectionString="rijcmlqRivKYvofkPYK1K8d8VOUWqzSvGFIszayeWrRT1/wDiWj6FVNCdYnxDbKNQwOZ6e7FS8FYDG8w2y5T406rz5RzJeOsFSBPXXDoVXgyi8wP1pR6eObjAqoXAdklqXUEe2vMZ29PY04oAGE1BChEb6pN1Tr5tLT8TxlXette39luNaNll2YRRWd/P1zo+ZfyVwa/iSif/zo6uniUBFvaoLr7dsxwbLuBKezRQsZCQWrEmk=" CommandTimeout="0">
+      <TableDataSource Name="Table" Alias="Query" DataType="System.Int32" Enabled="true" SelectCommand="Exec SpRptFormatoFacturaMoneda&#13;&#10;@NDOCUMENTOS=@NDOCUMENTOS,&#13;&#10;@FUENTE=@FUENTE,&#13;&#10;@DOCUMENTO=@DOCUMENTO,&#13;&#10;@RFUENTEINI=@RFUENTEINI,&#13;&#10;@RFUENTEFIN=@RFUENTEFIN,&#13;&#10;@RDOCUMENTOINI=@RDOCUMENTOINI,&#13;&#10;@RDOCUMENTOFIN=@RDOCUMENTOFIN,&#13;&#10;@PROFESIONAL=@PROFESIONAL,&#13;&#10;@NOTACONTABLE=@NOTACONTABLE,&#13;&#10;@CIUDAD=@CIUDAD,&#13;&#10;@DIRECCION=@DIRECCION,&#13;&#10;@TELEFONO=@TELEFONO,&#13;&#10;@EMAIL=@EMAIL,&#13;&#10;@ESTILO=@ESTILO,&#13;&#10;@COMPAÑIA=@COMPAÑIA,&#13;&#10;@CORTE=@CORTE,&#13;&#10;@FAX=@FAX,&#13;&#10;@NIT=@NIT,&#13;&#10;@ESCALA=@ESCALA,&#13;&#10;@TIPOMONEDA=@TIPOMONEDA,&#13;&#10;@MOMTOLETRAS=@MOMTOLETRAS,&#13;&#10;@DESCRIPCION=@DESCRIPCION&#13;&#10;, @IdReportDataBase = @IdReportDataBase">
+        <Column Name="CONCE_FBO" DataType="System.String"/>
+        <Column Name="CCOSTO_FBO" DataType="System.String"/>
+        <Column Name="DESLARGA_FBO" DataType="System.String"/>
+        <Column Name="CANTI_FBO" DataType="System.Decimal"/>
+        <Column Name="VRUNI_FBO" DataType="System.Decimal"/>
+        <Column Name="VRTOT_FBO" DataType="System.Decimal"/>
+        <Column Name="FECHA_FHE" DataType="System.String"/>
+        <Column Name="OBSERV_FHE" DataType="System.String"/>
+        <Column Name="CLIENTE_FHE" DataType="System.String"/>
+        <Column Name="CLIPRV_FBO" DataType="System.String"/>
+        <Column Name="FUENTE_FHE" DataType="System.String"/>
+        <Column Name="VRCONCE_FHE" DataType="System.Decimal"/>
+        <Column Name="VRDSCTO_FHE" DataType="System.Decimal"/>
+        <Column Name="VRIVA_FHE" DataType="System.Decimal"/>
+        <Column Name="PORDES_FBO" DataType="System.Decimal"/>
+        <Column Name="PORIVA_FBO" DataType="System.Decimal"/>
+        <Column Name="MONTO_FHE" DataType="System.String"/>
+        <Column Name="FACTOR_FHE" DataType="System.Decimal"/>
+        <Column Name="CONCEPTO_FHE" DataType="System.String"/>
+        <Column Name="RESOLUCION" DataType="System.String"/>
+        <Column Name="TCAMBIO_FHE" DataType="System.Decimal"/>
+        <Column Name="REFERENCIA_FHE" DataType="System.String"/>
+        <Column Name="MONEDA_FHE" DataType="System.String"/>
+        <Column Name="VENDEDOR_FHE" DataType="System.String"/>
+        <Column Name="NOMBVENDE" DataType="System.String"/>
+        <Column Name="ANODCTO" DataType="System.String"/>
+        <Column Name="FNTEDCTO" DataType="System.String"/>
+        <Column Name="NUMEDCTO" DataType="System.String"/>
+        <Column Name="FECHDCTO" DataType="System.String"/>
+        <Column Name="NUMTDCTO" DataType="System.Int32"/>
+        <Column Name="SUDBDCTO" DataType="System.Decimal"/>
+        <Column Name="SUCRDCTO" DataType="System.Decimal"/>
+        <Column Name="IACTDCTO" DataType="System.String"/>
+        <Column Name="DESCDCTO" DataType="System.String"/>
+        <Column Name="IDCENCO" DataType="System.String"/>
+        <Column Name="IDTERCERO" DataType="System.String"/>
+        <Column Name="IDCLIPRV" DataType="System.String"/>
+        <Column Name="IDBANCO" DataType="System.String"/>
+        <Column Name="CBADCTO" DataType="System.String"/>
+        <Column Name="CHEDCTO" DataType="System.String"/>
+        <Column Name="VCHDCTO" DataType="System.Decimal"/>
+        <Column Name="ENTREGADO" DataType="System.String"/>
+        <Column Name="TPRECDCTO" DataType="System.String"/>
+        <Column Name="NDRECDCTO" DataType="System.String"/>
+        <Column Name="ENFDCTO" DataType="System.DateTime"/>
+        <Column Name="AUXILIAR" DataType="System.String"/>
+        <Column Name="ITEM" DataType="System.String"/>
+        <Column Name="STATUSDCTO" DataType="System.String"/>
+        <Column Name="BENEFDCTO" DataType="System.String"/>
+        <Column Name="IMPRICHEQUE" DataType="System.String"/>
+        <Column Name="MONTOLETRAS" DataType="System.String"/>
+        <Column Name="NReversiones" DataType="System.Decimal"/>
+        <Column Name="AjusteInflacion" DataType="System.String"/>
+        <Column Name="Paag_Mes" DataType="System.Decimal"/>
+        <Column Name="Paag_Acu" DataType="System.Decimal"/>
+        <Column Name="IndContabPrestamo" DataType="System.String"/>
+        <Column Name="NumVales" DataType="System.Decimal"/>
+        <Column Name="NumValesConciliados" DataType="System.Decimal"/>
+        <Column Name="NCF" DataType="System.String"/>
+        <Column Name="NCF_Modificado" DataType="System.String"/>
+        <Column Name="Moneda" DataType="System.String"/>
+        <Column Name="VrMoneda" DataType="System.Decimal"/>
+        <Column Name="MontoMoneda" DataType="System.String"/>
+        <Column Name="VencCheque" DataType="System.String"/>
+        <Column Name="TasaCambio" DataType="System.Decimal"/>
+        <Column Name="BU" DataType="System.String"/>
+        <Column Name="GenEsquema" DataType="System.String"/>
+        <Column Name="Cierre" DataType="System.String"/>
+        <Column Name="VRANTICIPO_FHE" DataType="System.Decimal"/>
+        <Column Name="CONSECU_FBO" DataType="System.Int32"/>
+        <Column Name="FUENTE_FHE1" DataType="System.String"/>
+        <Column Name="FECHA_FHE1" DataType="System.String"/>
+        <Column Name="CLIENTE_FHE1" DataType="System.String"/>
+        <Column Name="DIASVEN_FHE" DataType="System.Int32"/>
+        <Column Name="CTACAJA_FHE" DataType="System.String"/>
+        <Column Name="REFERENCIA_FHE1" DataType="System.String"/>
+        <Column Name="VRCONCE_FHE1" DataType="System.Decimal"/>
+        <Column Name="VRDSCTO_FHE1" DataType="System.Decimal"/>
+        <Column Name="VRIVA_FHE1" DataType="System.Decimal"/>
+        <Column Name="VRANTICIPO_FHE1" DataType="System.Decimal"/>
+        <Column Name="OBSERV_FHE1" DataType="System.String"/>
+        <Column Name="STATUS_FHE" DataType="System.String"/>
+        <Column Name="VENDEDOR_FHE1" DataType="System.String"/>
+        <Column Name="MONEDA_FHE1" DataType="System.String"/>
+        <Column Name="TCAMBIO_FHE1" DataType="System.Decimal"/>
+        <Column Name="MONTO_FHE1" DataType="System.String"/>
+        <Column Name="FACTOR_FHE1" DataType="System.Decimal"/>
+        <Column Name="CONCEPTO_FHE1" DataType="System.String"/>
+        <Column Name="USUARIO_FHE" DataType="System.String"/>
+        <Column Name="NCF_FHE" DataType="System.String"/>
+        <Column Name="NCF_Modificado_FHE" DataType="System.String"/>
+        <Column Name="IdenAutorizacionCI_Fhe" DataType="System.Int32"/>
+        <Column Name="BU1" DataType="System.String"/>
+        <Column Name="Item_FHE" DataType="System.String"/>
+        <Column Name="CONCE_FBO1" DataType="System.String"/>
+        <Column Name="FUENTE_FBO" DataType="System.String"/>
+        <Column Name="CCOSTO_FBO1" DataType="System.String"/>
+        <Column Name="AUXILIAR_FBO" DataType="System.String"/>
+        <Column Name="DBCR_FBO" DataType="System.String"/>
+        <Column Name="CANTI_FBO1" DataType="System.Decimal"/>
+        <Column Name="VRUNI_FBO1" DataType="System.Decimal"/>
+        <Column Name="SUBTOTAL_FBO" DataType="System.Decimal"/>
+        <Column Name="VRTOT_FBO1" DataType="System.Decimal"/>
+        <Column Name="PORDES_FBO1" DataType="System.Decimal"/>
+        <Column Name="PORIVA_FBO1" DataType="System.Decimal"/>
+        <Column Name="PORRET_FBO" DataType="System.Decimal"/>
+        <Column Name="BASEIVA_FBO" DataType="System.Decimal"/>
+        <Column Name="BASERET_FBO" DataType="System.Decimal"/>
+        <Column Name="MONEDA_FBO" DataType="System.String"/>
+        <Column Name="DESLARGA_FBO1" DataType="System.String"/>
+        <Column Name="CLIPRV_FBO1" DataType="System.String"/>
+        <Column Name="TD_FBO" DataType="System.String"/>
+        <Column Name="DCTO_FBO" DataType="System.String"/>
+        <Column Name="VCTO_FBO" DataType="System.String"/>
+        <Column Name="REFE_FBO" DataType="System.String"/>
+        <Column Name="VRTOTDES_FBO" DataType="System.Decimal"/>
+        <Column Name="VRTOTIVA_FBO" DataType="System.Decimal"/>
+        <Column Name="UNIDAD1_FBO" DataType="System.String"/>
+        <Column Name="VRUNIDAD1_FBO" DataType="System.Decimal"/>
+        <Column Name="UNIDAD2_FBO" DataType="System.String"/>
+        <Column Name="VRUNIDAD2_FBO" DataType="System.Decimal"/>
+        <Column Name="UNIDAD3_FBO" DataType="System.String"/>
+        <Column Name="VRUNIDAD3_FBO" DataType="System.Decimal"/>
+        <Column Name="ITEM_FBO" DataType="System.String"/>
+        <Column Name="VRUNIMONEDA_FBO" DataType="System.Decimal"/>
+        <Column Name="ValorAjuste" DataType="System.Decimal"/>
+        <Column Name="CuentaAjuste" DataType="System.String"/>
+        <Column Name="Zona" DataType="System.String"/>
+        <Column Name="Vendedor" DataType="System.String"/>
+        <Column Name="ConceptoAutomatico" DataType="System.Int32"/>
+        <Column Name="CODICTA" DataType="System.String"/>
+        <Column Name="BU2" DataType="System.String"/>
+        <Column Name="TipoImpresion" DataType="System.Int32"/>
+        <Column Name="TipoTotalizadorConcepto" DataType="System.String"/>
+        <Column Name="IDCliente" DataType="System.String"/>
+        <Column Name="Iden3ros" DataType="System.String"/>
+        <Column Name="IdenImpuesto" DataType="System.String"/>
+        <Column Name="MuestraVbles" DataType="System.String"/>
+        <Column Name="CIUDADCIA" DataType="System.String"/>
+        <Column Name="DIRECCIONCIA" DataType="System.String"/>
+        <Column Name="TELEFONOCIA" DataType="System.String"/>
+        <Column Name="EMAILCIA" DataType="System.String"/>
+        <Column Name="ESTILO" DataType="System.String"/>
+        <Column Name="COMPANIA" DataType="System.String"/>
+        <Column Name="CORTE" DataType="System.String"/>
+        <Column Name="FAX" DataType="System.String"/>
+        <Column Name="NIT" DataType="System.String"/>
+        <Column Name="DOCUM_FHE" DataType="System.String"/>
+        <Column Name="DOCUM_FHE1" DataType="System.String"/>
+        <Column Name="TIPOFAC_FHE" DataType="System.String"/>
+        <Column Name="CXC_FHE" DataType="System.String"/>
+        <Column Name="FECHATCAMBIO_FHE" DataType="System.String"/>
+        <Column Name="CCOSTO_FHE" DataType="System.String"/>
+        <Column Name="AUXILIAR_FHE" DataType="System.String"/>
+        <Column Name="CTAANTICIPO_FHE" DataType="System.String"/>
+        <Column Name="TFAC_FHE" DataType="System.String"/>
+        <Column Name="CICLO_FHE" DataType="System.String"/>
+        <Column Name="IDDOCUM_FHE" DataType="System.String"/>
+        <Column Name="NOVEDAD_FHE" DataType="System.Decimal"/>
+        <Column Name="IDMODELO_FHE" DataType="System.String"/>
+        <Column Name="COMPROBANTEFISCAL_FHE" DataType="System.String"/>
+        <Column Name="FECHAFACTURACION" DataType="System.String"/>
+        <Column Name="FactAuto_FHE" DataType="System.Decimal"/>
+        <Column Name="DOCUM_FBO" DataType="System.String"/>
+        <Column Name="Tercero" DataType="System.String"/>
+        <Column Name="ConceRelacionado" DataType="System.String"/>
+        <Column Name="PREFIJO" DataType="System.String"/>
+        <Column Name="IDTERCERO1" DataType="System.String"/>
+        <Column Name="RAZONCIAL" DataType="System.String"/>
+        <Column Name="DIRECCION" DataType="System.String"/>
+        <Column Name="CIUDAD" DataType="System.String"/>
+        <Column Name="TELEFONO" DataType="System.String"/>
+        <Column Name="FAX1" DataType="System.String"/>
+        <Column Name="DIRCORRES" DataType="System.String"/>
+        <Column Name="EMAIL" DataType="System.String"/>
+        <Column Name="WEBSITE" DataType="System.String"/>
+        <Column Name="IDZONA" DataType="System.String"/>
+        <Column Name="IDVENDE" DataType="System.String"/>
+        <Column Name="DIPLAZO" DataType="System.Int16"/>
+        <Column Name="CUPOCRE" DataType="System.Decimal"/>
+        <Column Name="CONTACTO" DataType="System.String"/>
+        <Column Name="DIRCONTA" DataType="System.String"/>
+        <Column Name="EMAILCONTA" DataType="System.String"/>
+        <Column Name="TELCONTA" DataType="System.String"/>
+        <Column Name="CONTACTOA" DataType="System.String"/>
+        <Column Name="DIRCONTAA" DataType="System.String"/>
+        <Column Name="EMAILCONTAA" DataType="System.String"/>
+        <Column Name="TELCONTAA" DataType="System.String"/>
+        <Column Name="GERENTE" DataType="System.String"/>
+        <Column Name="EMAILGEREN" DataType="System.String"/>
+        <Column Name="DIRGERENTE" DataType="System.String"/>
+        <Column Name="TELGERENTE" DataType="System.String"/>
+        <Column Name="TipoCliente" DataType="System.String"/>
+        <Column Name="DIAGRACIA" DataType="System.Int16"/>
+        <Column Name="BLOQUEO" DataType="System.Boolean" BindableControl="CheckBox"/>
+        <Column Name="AUTORIZACION" DataType="System.Boolean" BindableControl="CheckBox"/>
+        <Column Name="BLOQUEOPORNIT" DataType="System.Boolean" BindableControl="CheckBox"/>
+        <Column Name="SEGMENTO" DataType="System.String"/>
+        <Column Name="TAG" DataType="System.String"/>
+        <Column Name="CODIGOUBICACION" DataType="System.String"/>
+        <Column Name="FormatoDeFactura" DataType="System.String"/>
+        <Column Name="FormatoDePedido" DataType="System.String"/>
+        <Column Name="FormatoDeRemision" DataType="System.String"/>
+        <Column Name="FormatoDeFacturaRemision" DataType="System.String"/>
+        <Column Name="DIVPOLITICA" DataType="System.String"/>
+        <Column Name="CODIGODANE" DataType="System.String"/>
+        <Column Name="CodAlterno" DataType="System.String"/>
+        <Column Name="IndNCF" DataType="System.Byte"/>
+        <Column Name="GrEmpresarial" DataType="System.String"/>
+        <Column Name="Pais" DataType="System.String"/>
+        <Column Name="Tipo" DataType="System.String"/>
+        <Column Name="CentroCosto" DataType="System.String"/>
+        <Column Name="Item1" DataType="System.String"/>
+        <Column Name="GenerarMora" DataType="System.Int32"/>
+        <Column Name="IntMora" DataType="System.Decimal"/>
+        <Column Name="Deshabilitado" DataType="System.Int32"/>
+        <Column Name="PObservaciones" DataType="System.String"/>
+        <Column Name="DireccionVendedor" DataType="System.String"/>
+        <Column Name="EmailVendedor" DataType="System.String"/>
+        <Column Name="CiudadVendedor" DataType="System.String"/>
+        <Column Name="TelefonoVendedor" DataType="System.String"/>
+        <Column Name="ZonaVendedor" DataType="System.String"/>
+        <Column Name="NombreZonaVendedor" DataType="System.String"/>
+        <Column Name="ZonaCliente" DataType="System.String"/>
+        <Column Name="NombreZonaCliente" DataType="System.String"/>
+        <Column Name="DescConcepto" DataType="System.String"/>
+        <Column Name="NumeroCuotasFactura" DataType="System.Int32"/>
+        <Column Name="ClienteTercero" DataType="System.String"/>
+        <Column Name="FPImpFactura" DataType="System.String"/>
+        <Column Name="Leyenda" DataType="System.String"/>
+        <Column Name="XmlAdicionales" DataType="System.String"/>
+        <Column Name="Id_AplicacionesZeus" DataType="System.Int32"/>
+        <Column Name="CodigoPropiedad1_FHE" DataType="System.String"/>
+        <Column Name="CodigoPropiedad2_FHE" DataType="System.String"/>
+        <Column Name="CodigoPropiedad3_FHE" DataType="System.String"/>
+        <Column Name="CodigoPropiedad4_FHE" DataType="System.String"/>
+        <Column Name="CodigoPropiedad5_FHE" DataType="System.String"/>
+        <Column Name="CodigoPropiedad1_FBO" DataType="System.String"/>
+        <Column Name="CodigoPropiedad2_FBO" DataType="System.String"/>
+        <Column Name="CodigoPropiedad3_FBO" DataType="System.String"/>
+        <Column Name="CodigoPropiedad4_FBO" DataType="System.String"/>
+        <Column Name="CodigoPropiedad5_FBO" DataType="System.String"/>
+        <Column Name="FPAGCONTADO" DataType="System.Int32"/>
+        <Column Name="FPAGCREDITO" DataType="System.Int32"/>
+        <Column Name="AgruparNIT" DataType="System.String"/>
+        <Column Name="Iden_DatosImpuestos" DataType="System.Decimal"/>
+        <Column Name="TotalConcep" DataType="System.Int32"/>
+        <Column Name="NUMEFAC_FHE" DataType="System.String"/>
+        <Column Name="PREFIJO1" DataType="System.String"/>
+        <Column Name="NOVEDAD" DataType="System.Decimal"/>
+        <Column Name="IdDocumentoExterno" DataType="System.String"/>
+        <CommandParameter Name="NDOCUMENTOS" DataType="3" Size="1" Expression="[NDOCUMENTOS]"/>
+        <CommandParameter Name="FUENTE" DataType="3" Size="2" Expression="[FUENTE]"/>
+        <CommandParameter Name="DOCUMENTO" DataType="22" Size="10" Expression="[DOCUMENTO]"/>
+        <CommandParameter Name="RFUENTEINI" DataType="3" Size="2" Expression="[RFUENTEINI]"/>
+        <CommandParameter Name="RFUENTEFIN" DataType="3" Size="2" Expression="[RFUENTEFIN]"/>
+        <CommandParameter Name="RDOCUMENTOINI" DataType="3" Size="10" Expression="[RDOCUMENTOINI]"/>
+        <CommandParameter Name="RDOCUMENTOFIN" DataType="3" Size="10" Expression="[RDOCUMENTOFIN]"/>
+        <CommandParameter Name="PROFESIONAL" DataType="3" Size="1" Expression="[PROFESIONAL]"/>
+        <CommandParameter Name="NOTACONTABLE" DataType="3" Size="1" Expression="[NOTACONTABLE]"/>
+        <CommandParameter Name="CIUDAD" DataType="22" Size="50" Expression="[CIUDAD]"/>
+        <CommandParameter Name="DIRECCION" DataType="22" Size="150" Expression="[DIRECCION]"/>
+        <CommandParameter Name="TELEFONO" DataType="22" Size="20" Expression="[TELEFONO]"/>
+        <CommandParameter Name="EMAIL" DataType="22" Size="50" Expression="[EMAIL]"/>
+        <CommandParameter Name="ESTILO" DataType="22" Size="10" Expression="[ESTILO]"/>
+        <CommandParameter Name="COMPAÑIA" DataType="22" Size="100" Expression="[COMPANIA]"/>
+        <CommandParameter Name="CORTE" DataType="22" Size="20" Expression="[CORTE]"/>
+        <CommandParameter Name="FAX" DataType="22" Size="20" Expression="[FAX]"/>
+        <CommandParameter Name="NIT" DataType="22" Size="30" Expression="[NIT]"/>
+        <CommandParameter Name="ESCALA" DataType="5" Size="18" Expression="[ESCALA]" DefaultValue="0"/>
+        <CommandParameter Name="TIPOMONEDA" DataType="22" Size="30" Expression="[TIPOMONEDA]"/>
+        <CommandParameter Name="MOMTOLETRAS" DataType="22" Size="1000" Expression="[MOMTOLETRAS]"/>
+        <CommandParameter Name="DESCRIPCION" DataType="22" Size="200" Expression="[DESCRIPCION]"/>
+        <CommandParameter Name="IdReportDataBase" DataType="8" Expression="[IdReportDataBase]" DefaultValue="0"/>
+      </TableDataSource>
+      <TableDataSource Name="Table1" Alias="Logo" DataType="System.Int32" Enabled="true" SelectCommand="Exec SpLogoEmpresa">
+        <Column Name="Iden" DataType="System.Int32"/>
+        <Column Name="Logo" DataType="System.Byte[]" BindableControl="Picture"/>
+      </TableDataSource>
+      <TableDataSource Name="Table3" Alias="Query3" DataType="System.Int32" Enabled="true" SelectCommand="Exec SpRptSubReporteTotalFactura&#13;&#10;@Fuente=@Fuente,&#13;&#10;@Documento=@Documento,&#13;&#10;@TotalVenta=@TotalVenta,&#13;&#10;@TotalDescto=@TotalDescto,&#13;&#10;@TotaIVA=@TotaIVA,&#13;&#10;@TotalVentaNeta=@TotalVentaNeta,&#13;&#10;@TotalFactura=@TotalFactura,&#13;&#10;@TotalAnticipo=@TotalAnticipo,&#13;&#10;@ValorAPagar=@ValorAPagar,&#13;&#10;@TasaCambio=@TasaCambio">
+        <Column Name="Totalizador" DataType="System.String"/>
+        <Column Name="ValorTotalizador" DataType="System.Decimal"/>
+        <Column Name="Orden" DataType="System.Int32"/>
+        <Column Name="Totalizar" DataType="System.Int32"/>
+        <Column Name="OrdenTotalizador" DataType="System.Int32"/>
+        <CommandParameter Name="Fuente" DataType="22" Size="2" Expression="[FuenteDetalle]"/>
+        <CommandParameter Name="Documento" DataType="22" Size="10" Expression="[DocumentoDetalle]"/>
+        <CommandParameter Name="TotalVenta" DataType="22" Size="30" Expression="[TotalVenta]"/>
+        <CommandParameter Name="TotalDescto" DataType="22" Size="30" Expression="[TotalDescto]"/>
+        <CommandParameter Name="TotaIVA" DataType="22" Size="30" Expression="[TotalIva]"/>
+        <CommandParameter Name="TotalVentaNeta" DataType="22" Size="30" Expression="[TotalVentaNeta]"/>
+        <CommandParameter Name="TotalFactura" DataType="22" Size="30" Expression="[TotalFactura]"/>
+        <CommandParameter Name="TotalAnticipo" DataType="22" Size="30" Expression="[TotalAnticipo]"/>
+        <CommandParameter Name="ValorAPagar" DataType="22" Size="30" Expression="[ValoraPagar]"/>
+        <CommandParameter Name="TasaCambio" DataType="5" Size="18" Expression="[ESCALA]" DefaultValue="0"/>
+      </TableDataSource>
+      <TableDataSource Name="Table4" Alias="Query4" DataType="System.Int32" Enabled="true" SelectCommand="SET FMTONLY OFF;&#13;&#10;Exec SPCUOTAS&#13;&#10;@FUENTE_CUO=@FUENTE_CUO,&#13;&#10;@DOCUM_CUO=@DOCUM_CUO,&#13;&#10;@PROFESIONAL=@PROFESIONAL,&#13;&#10;@TasaCambio=@TasaCambio,&#13;&#10;@CuotaIni=1,&#13;&#10;@CuotaFin=@CuotaFin&#13;&#10;">
+        <Column Name="FUENTE_CUO" DataType="System.String"/>
+        <Column Name="DOCUM_CUO" DataType="System.String"/>
+        <Column Name="CUOTAS_CUO" DataType="System.Int32"/>
+        <Column Name="VCTOINI_CUO" DataType="System.String"/>
+        <Column Name="VALOR_CUO" DataType="System.Decimal"/>
+        <Column Name="vrTotal" DataType="System.Decimal"/>
+        <Column Name="NUME_CUO" DataType="System.Int32"/>
+        <CommandParameter Name="FUENTE_CUO" DataType="3" Size="2" Expression="[FuenteDetalle]"/>
+        <CommandParameter Name="DOCUM_CUO" DataType="3" Size="10" Expression="[DocumentoDetalle]"/>
+        <CommandParameter Name="PROFESIONAL" DataType="3" Size="1" Expression="[FPDetallado]"/>
+        <CommandParameter Name="CuotaFin" DataType="8" Size="18" Expression="[CuotasFin]" DefaultValue="0"/>
+        <CommandParameter Name="TasaCambio" DataType="9" Size="18" Expression="[ESCALA]" DefaultValue="0"/>
+      </TableDataSource>
+      <TableDataSource Name="Table2" Alias="Query5" DataType="System.Int32" Enabled="true" SelectCommand="SET FMTONLY OFF;&#13;&#10;Exec SPCUOTAS&#13;&#10;@FUENTE_CUO=@FUENTE_CUO,&#13;&#10;@DOCUM_CUO=@DOCUM_CUO,&#13;&#10;@PROFESIONAL=@PROFESIONAL,&#13;&#10;@TasaCambio=@TasaCambio,&#13;&#10;@CuotaIni=4,&#13;&#10;@CuotaFin=0">
+        <Column Name="Fuente_Cuo" DataType="System.String"/>
+        <Column Name="Docum_Cuo" DataType="System.String"/>
+        <Column Name="Cuotas_Cuo" DataType="System.Int32"/>
+        <Column Name="VctoIni_Cuo" DataType="System.String"/>
+        <Column Name="Valor_Cuo" DataType="System.Decimal"/>
+        <Column Name="vrTotal" DataType="System.Decimal"/>
+        <Column Name="NUME_CUO" DataType="System.Int32"/>
+        <CommandParameter Name="FUENTE_CUO" DataType="3" Size="2" Expression="[FuenteDetalle]"/>
+        <CommandParameter Name="DOCUM_CUO" DataType="22" Size="10" Expression="[DocumentoDetalle]"/>
+        <CommandParameter Name="PROFESIONAL" DataType="3" Size="1" Expression="[FPDetallado]"/>
+        <CommandParameter Name="TasaCambio" DataType="9" Size="18" Expression="[ESCALA]" DefaultValue="0"/>
+      </TableDataSource>
+    </MsSqlDataConnection>
+    <Parameter Name="NDOCUMENTOS" DataType="System.String" Expression="&quot;2&quot;"/>
+    <Parameter Name="FUENTE" DataType="System.String" Expression="&quot;36&quot;"/>
+    <Parameter Name="DOCUMENTO" DataType="System.String" Expression="&quot;0000000719&quot;"/>
+    <Parameter Name="RFUENTEINI" DataType="System.String" Expression="&quot;36&quot;"/>
+    <Parameter Name="RFUENTEFIN" DataType="System.String" Expression="&quot;36&quot;"/>
+    <Parameter Name="RDOCUMENTOINI" DataType="System.String" Expression="&quot;0000000719&quot;"/>
+    <Parameter Name="RDOCUMENTOFIN" DataType="System.String" Expression="&quot;0000000719&quot;"/>
+    <Parameter Name="PROFESIONAL" DataType="System.String" Expression="&quot;N&quot;"/>
+    <Parameter Name="NOTACONTABLE" DataType="System.String" Expression="&quot;0&quot;"/>
+    <Parameter Name="CIUDAD" DataType="System.String" Expression="&quot;CARTAGENA&quot;"/>
+    <Parameter Name="DIRECCION" DataType="System.String" Expression="&quot;CENTRO COMERCIAL BOCAGRANDE&quot;"/>
+    <Parameter Name="TELEFONO" DataType="System.String" Expression="&quot;6777247&quot;"/>
+    <Parameter Name="EMAIL" DataType="System.String" Expression="&quot;scortes20&quot;"/>
+    <Parameter Name="ESTILO" DataType="System.String" Expression="&quot;0&quot;"/>
+    <Parameter Name="COMPANIA" DataType="System.String" Expression="[COMPAÑIA]"/>
+    <Parameter Name="CORTE" DataType="System.String" Expression="&quot;2013/02/01&quot;"/>
+    <Parameter Name="FAX" DataType="System.String" Expression="&quot;6777247&quot;"/>
+    <Parameter Name="NIT" DataType="System.String" Expression="&quot;1.128.056.523&quot;"/>
+    <Parameter Name="FteDoc" DataType="System.String" Expression="IIf(([Query.Docum_fhe] == [Query.numefac_fhe]) || ([Query.numefac_fhe] == &quot;&quot;), IIf([Query.Prefijo]!=&quot;&quot;,[Query.Fuente_Fhe]  + &quot;-&quot; +  [Query.Prefijo]+&quot; &quot;+ToString(ToDecimal(Substring([Query.Docum_fhe],2,8))),[Query.Fuente_Fhe] + &quot;-&quot; + ToString(ToDecimal(Substring([Query.Docum_fhe],2,8)))), [Query.Fuente_Fhe]+&quot; &quot;+[Query.numefac_fhe])"/>
+    <Parameter Name="Cantidad" DataType="System.String" Expression="IIf(ToDecimal([Query.Canti_Fbo])==0,1,[Query.Canti_Fbo])"/>
+    <Parameter Name="ValorUnitario" DataType="System.String" Expression="ToDecimal([Query.VrUni_Fbo])/ToDecimal(IIf(ToDecimal([ESCALA])!=0,[ESCALA],1))"/>
+    <Parameter Name="ValorTotal" DataType="System.String" Expression="Abs(ToDecimal([Query.VrTot_Fbo])/ToDecimal(IIf(ToDecimal([ESCALA])!=0,[ESCALA],1)))"/>
+    <Parameter Name="Descuento" DataType="System.String" Expression="IIf(ToDecimal([Query.PorDes_Fbo])==0,&quot;&quot;,[Query.PorDes_Fbo])"/>
+    <Parameter Name="Iva" DataType="System.String" Expression="IIf(ToDecimal([Query.PorIva_Fbo])==0,&quot;&quot;,[Query.PorIva_Fbo])"/>
+    <Parameter Name="FuenteDetalle" DataType="System.String" Expression="[Query.Fuente_Fhe]"/>
+    <Parameter Name="DocumentoDetalle" DataType="System.String" Expression="[Query.Docum_Fhe]"/>
+    <Parameter Name="FormadePago" DataType="System.String" Expression="IIf(ToDecimal([Query.NumeroCuotasFactura])!=0,&quot;Crédito&quot;,&quot; &quot;)"/>
+    <Parameter Name="Op" DataType="System.String" Expression="&quot;Maestro&quot;"/>
+    <Parameter Name="TipoMaestro" DataType="System.String" Expression="[Query.Fuente_Fhe]"/>
+    <Parameter Name="TipoTransaccion" DataType="System.String" Expression="&quot;Transacciones&quot;"/>
+    <Parameter Name="CodigoMaestro" DataType="System.String" Expression="[Query.Docum_Fhe]"/>
+    <Parameter Name="ConsecuivoTransaccion" DataType="System.Int32" Expression="[Query.Consecu_fbo]"/>
+    <Parameter Name="OpConcepto" DataType="System.String" Expression="&quot;Conceptos&quot;"/>
+    <Parameter Name="TotalVenta" DataType="System.String" Expression="&quot;&quot;"/>
+    <Parameter Name="TotalDescto" DataType="System.String" Expression="&quot;&quot;"/>
+    <Parameter Name="TotalIva" DataType="System.String" Expression="&quot;&quot;"/>
+    <Parameter Name="TotalVentaNeta" DataType="System.String" Expression="&quot;&quot;"/>
+    <Parameter Name="TotalFactura" DataType="System.String" Expression="&quot;&quot;"/>
+    <Parameter Name="TotalAnticipo" DataType="System.String" Expression="&quot;&quot;"/>
+    <Parameter Name="ValoraPagar" DataType="System.String" Expression="&quot;&quot;"/>
+    <Parameter Name="TasaCambio" DataType="System.String" Expression="1"/>
+    <Parameter Name="Ncuotas" DataType="System.String" Expression="[Query4.Cuotas_Cuo]"/>
+    <Parameter Name="Ncuotas2" DataType="System.String" Expression="[Query5.Cuotas_Cuo]"/>
+    <Parameter Name="Vencimiento" DataType="System.String" Expression="[Query4.VctoIni_Cuo]"/>
+    <Parameter Name="Vencimiento2" DataType="System.String" Expression="[Query5.VctoIni_Cuo]"/>
+    <Parameter Name="Valor" DataType="System.String" Expression="[Query4.vrTotal]"/>
+    <Parameter Name="Valor2" DataType="System.String" Expression="[Query5.vrTotal]"/>
+    <Parameter Name="Conexion" DataType="System.String"/>
+    <Parameter Name="ESCALA" DataType="System.String"/>
+    <Parameter Name="TIPOMONEDA" DataType="System.String"/>
+    <Parameter Name="MOMTOLETRAS" DataType="System.String"/>
+    <Parameter Name="DESCRIPCION" DataType="System.String"/>
+    <Parameter Name="Impresora" DataType="System.String" Expression="&quot;L&quot;"/>
+    <Parameter Name="VrCuota" DataType="System.String" Expression="IIf([FPDetallado]==&quot;S&quot;,&quot;&quot;,[Query4.VALOR_CUO])"/>
+    <Parameter Name="VrCuota2" DataType="System.String" Expression="IIf([FPDetallado]==&quot;S&quot;,&quot;&quot;,[Query5.VALOR_CUO])"/>
+    <Parameter Name="LabelCuota" DataType="System.String" Expression="IIf([FPDetallado]==&quot;S&quot;,&quot;&quot;,&quot;Valor Cuota&quot;)"/>
+    <Parameter Name="LabelTotalCuota" DataType="System.String" Expression="IIf([FPDetallado]==&quot;S&quot;,&quot;Valor Cuota&quot;,&quot;Valor Total&quot;)"/>
+    <Parameter Name="FPDetallado" DataType="System.String" Expression="IIf(Trim([Query.FPImpFactura])==&quot;DETALLADO&quot;,&quot;S&quot;,&quot;N&quot;)"/>
+    <Parameter Name="CuotasFin" DataType="System.Int32" Expression="IIf([FPDetallado]==&quot;S&quot;,3,0)"/>
+    <Parameter Name="COMPAÑIA" DataType="System.String" Expression="[COMPANIA]"/>
+    <Parameter Name="IdReportDataBase" DataType="System.Int32" Expression="0"/>
+    <Total Name="SumatoriaTotales" Expression="[Query3.ValorTotalizador]" Evaluator="MasterData1" PrintOn="GroupFooter3" EvaluateCondition="[Query3.Totalizar]==1"/>
+    <Total Name="NumSubtotales" TotalType="Count" Evaluator="MasterData2" PrintOn="Footer1" IncludeInvisibleRows="true"/>
+  </Dictionary>
+  <ReportPage Name="Page1" PaperWidth="215.9" PaperHeight="279.4" RawPaperSize="1" FirstPageSource="15" OtherPagesSource="15" StartPageEvent="Page1_StartPage">
+    <PageHeaderBand Name="PageHeader1" Width="740.5" Height="145.15" CanGrow="true">
+      <TextObject Name="Memo1" Top="3.1" Width="737.15" Height="21.43" ShiftMode="Never" Text="[COMPANIA]" Padding="2, 1, 2, 1" HorzAlign="Center" Font="Courier New, 12pt, style=Bold"/>
+      <TextObject Name="Memo2" Top="30.24" Width="737.15" Height="18.9" ShiftMode="Never" Text="[NIT]" Padding="2, 1, 2, 1" HorzAlign="Center" Font="Courier New, 9pt, style=Bold"/>
+      <TextObject Name="Memo3" Top="56.7" Width="738.49" Height="16.63" ShiftMode="Never" Text="[DIRECCION]" Padding="2, 1, 2, 1" HorzAlign="Center" Font="Courier New, 9pt, style=Bold"/>
+      <TextObject Name="Memo4" Left="-0.36" Top="81.09" Width="738.49" Height="16.63" ShiftMode="Never" Text="Teléfono: [TELEFONO]  Fax:[FAX]  Email:[EMAIL]" Padding="2, 1, 2, 1" HorzAlign="Center" Font="Courier New, 9pt, style=Bold"/>
+      <TextObject Name="Memo5" Left="1.15" Top="100.03" Width="736.82" Height="16.63" ShiftMode="Never" Text="[CIUDAD]" Padding="2, 1, 2, 1" HorzAlign="Center" Font="Courier New, 9pt, style=Bold"/>
+      <TextObject Name="Memo6" Left="1.33" Top="117.19" Width="247.82" Height="13.61" ShiftMode="Never" Text="Fecha de Impresión: [FormatDateTime([Date],&quot;Short Date&quot;)]" Padding="2, 1, 2, 1" Font="Courier New, 7pt"/>
+      <TextObject Name="Memo7" Left="577.33" Top="114.74" Width="159.82" Height="12.09" ShiftMode="Never" Text="Hora: [Format(&quot;{0:hh:mm tt}&quot;, DateTime.Now)]" Padding="2, 1, 2, 1" HorzAlign="Right" Font="Courier New, 7pt"/>
+      <PictureObject Name="Picture1" Width="151.18" Height="75.6" Fill.Color="White" ShiftMode="Never" DataColumn="Logo.Logo"/>
+      <LineObject Name="Line1" Top="135.7" Width="740" Border.Color="Navy" Border.Width="1.5" ShiftMode="Never"/>
+    </PageHeaderBand>
+    <GroupHeaderBand Name="GroupHeader1" Top="147.37" Width="740.5" Condition="Trim(UpperCase([Query.fuente_fbo]))" SortOrder="None">
+      <GroupHeaderBand Name="GroupHeader3" Top="149.59" Width="740.5" Height="142.53" BeforePrintEvent="GroupHeader3_BeforePrint" StartNewPage="true" RepeatOnEveryPage="true" Condition="Trim(UpperCase([Query.docum_fbo]))" SortOrder="None" ResetPageNumber="true">
+        <TextObject Name="BOX2" Top="100.17" Width="737.1" Height="15.12" Border.Lines="All" Border.Color="Gray" ShiftMode="Never" Padding="2, 1, 2, 1" Font="Courier New, 8pt, style=Bold"/>
+        <TextObject Name="Memo23" Top="100.17" Width="79.38" Height="15.12" ShiftMode="Never" Text="Vendedor :" Padding="2, 1, 2, 1" Font="Courier New, 8pt, style=Bold"/>
+        <TextObject Name="Memo15" Top="62.37" Width="737.1" Height="30.24" ShiftMode="Never" Text="Cliente  :" Padding="2, 1, 2, 1" Font="Courier New, 8pt, style=Bold"/>
+        <TextObject Name="BOX3" Top="122.85" Width="737.1" Height="19.66" Border.Lines="Left, Right, Top" Border.Color="Gray" ShiftMode="Never" CanBreak="false" Padding="2, 1, 2, 1" Font="Courier New, 8pt, style=Bold"/>
+        <TextObject Name="Memo27" Top="127.41" Width="79.38" Height="15.12" ShiftMode="Never" Text="Detalle:  " Padding="2, 1, 2, 1" Font="Courier New, 8pt, style=Bold"/>
+        <TextObject Name="Memo24" Left="79.38" Top="100.17" Width="415.8" Height="15.12" ShiftMode="Never" Text="[Query.vendedor_fhe] [Query.NombVende]" Padding="2, 1, 2, 1" Font="Courier New, 8pt"/>
+        <TextObject Name="Memo25" Left="495.18" Top="100.17" Width="68.04" Height="15.12" ShiftMode="Never" Text="Zona    :" Padding="2, 1, 2, 1" Font="Courier New, 8pt, style=Bold"/>
+        <TextObject Name="Memo26" Left="563.22" Top="100.17" Width="173.88" Height="15.12" ShiftMode="Never" Text="[Query.NombreZonaCliente]" Padding="2, 1, 2, 1" Font="Courier New, 8pt"/>
+        <TextObject Name="Memo16" Top="77.49" Width="79.38" Height="15.12" ShiftMode="Never" Text="Dirección:" Padding="2, 1, 2, 1" Font="Courier New, 8pt, style=Bold"/>
+        <TextObject Name="Memo18" Left="79.38" Top="77.49" Width="415.8" Height="15.12" ShiftMode="Never" Text="[Query.Direccion]" Padding="2, 1, 2, 1" Font="Courier New, 8pt"/>
+        <TextObject Name="Memo20" Left="495.18" Top="77.49" Width="68.04" Height="15.12" ShiftMode="Never" Text="Ciudad  :" Padding="2, 1, 2, 1" Font="Courier New, 8pt, style=Bold"/>
+        <TextObject Name="Memo22" Left="563.22" Top="77.49" Width="173.88" Height="15.12" ShiftMode="Never" Text="[Query.CIUDAD]" Padding="2, 1, 2, 1" Font="Courier New, 8pt"/>
+        <TextObject Name="Memo17" Left="79.38" Top="62.37" Width="415.8" Height="15.12" ShiftMode="Never" Text="[Query.Idcliente] [Query.RazonCial]" Padding="2, 1, 2, 1" Font="Courier New, 8pt"/>
+        <TextObject Name="Memo19" Left="495.18" Top="62.37" Width="68.04" Height="15.12" ShiftMode="Never" Text="NIT     :" Padding="2, 1, 2, 1" Font="Courier New, 8pt, style=Bold"/>
+        <TextObject Name="Memo21" Left="563.22" Top="62.37" Width="173.88" Height="15.12" ShiftMode="Never" Text="[Query.ClienteTercero]" Padding="2, 1, 2, 1" Font="Courier New, 8pt"/>
+        <TextObject Name="Memo10" Top="35.65" Width="154.98" Height="15.12" ShiftMode="Never" Text="PÁGINA             :" Padding="2, 1, 2, 1" Font="Courier New, 8pt, style=Bold"/>
+        <TextObject Name="Memo13" Left="154.98" Top="35.65" Width="128.52" Height="15.12" ShiftMode="Never" Text="[Page] de [TotalPages]" Padding="2, 1, 2, 1" Font="Courier New, 8pt"/>
+        <TextObject Name="Memo9" Top="20.79" Width="154.98" Height="15.12" ShiftMode="Never" Text="FECHA              :" Padding="2, 1, 2, 1" Font="Courier New, 8pt, style=Bold"/>
+        <TextObject Name="Memo12" Left="154.98" Top="20.79" Width="128.52" Height="15.12" ShiftMode="Never" Text="[Query.Fecha_Fhe]" Padding="2, 1, 2, 1" Font="Courier New, 8pt"/>
+        <TextObject Name="Memo8" Top="5.67" Width="154.98" Height="15.12" ShiftMode="Never" Text="FACTURA DE VENTA   :" Padding="2, 1, 2, 1" Font="Courier New, 8pt, style=Bold"/>
+        <TextObject Name="Memo11" Left="154.98" Top="5.67" Width="128.52" Height="15.12" ShiftMode="Never" Text="[FteDoc]" Padding="2, 1, -5, 1" Font="Courier New, 8pt"/>
+        <TextObject Name="Memo14" Left="302.67" Top="4.99" Width="435.82" Height="43.23" ShiftMode="Never" Text="[Query.Resolucion]" Padding="2, 1, 2, 1" Font="Courier New, 7pt"/>
+        <TextObject Name="BOX1" Top="62.37" Width="737.1" Height="30.24" Border.Lines="All" Border.Color="Gray" ShiftMode="Never" Padding="2, 1, 2, 1" Font="Courier New, 8pt, style=Bold"/>
+        <TextObject Name="Text31" Left="495.18" Top="127.41" Width="136.08" Height="15.12" Text="Tasa de Cambio:" Padding="2, 1, 2, 1" Font="Courier New, 8pt, style=Bold"/>
+        <TextObject Name="Text8" Left="631.26" Top="127.41" Width="105.84" Height="15.12" BeforePrintEvent="Text8_BeforePrint" Text="[ESCALA]" Padding="2, 1, 2, 1" Format="Number" Format.UseLocale="false" Format.DecimalDigits="4" Format.DecimalSeparator="." Format.GroupSeparator="," Format.NegativePattern="1" Font="Courier New, 8pt"/>
+        <TextObject Name="Text41" Left="79.38" Top="127.41" Width="415.8" Height="15.12" ShiftMode="Never" Text="[DESCRIPCION]" Padding="2, 1, 2, 1" Font="Courier New, 8pt"/>
+        <ChildBand Name="Child7" Top="294.35" Width="740.5" Height="15.88" CanGrow="true" CanShrink="true">
+          <TextObject Name="Text21" Top="0.76" Width="737.1" Height="15.12" Border.Lines="Left, Right" Border.Color="Gray" CanGrow="true" CanShrink="true" ShiftMode="Never" CanBreak="false" Text="[Query.Concepto_Fhe]" Padding="2, 1, 2, 1" Font="Courier New, 8pt"/>
+          <ChildBand Name="Child8" Top="312.45" Width="740.5" Height="12.1">
+            <TextObject Name="Text42" Width="737.1" Height="4.54" Border.Lines="Left, Right, Bottom" Border.Color="Gray" ShiftMode="Never" CanBreak="false" Padding="2, 1, 2, 1" Font="Courier New, 8pt, style=Bold"/>
+          </ChildBand>
+        </ChildBand>
+        <GroupHeaderBand Name="GroupHeader2" Top="326.77" Width="740.5" Height="15.12" RepeatOnEveryPage="true" Condition="Trim(UpperCase([Query.docum_fbo]))" SortOrder="None" KeepTogether="true" ResetPageNumber="true">
+          <TextObject Name="EstiloHeader" Width="737.1" Height="15.12" Border.Lines="All" Border.Color="Gray" Fill.Color="Silver" ShiftMode="Never" Padding="0, 2, 1, 1" Font="Courier New, 8pt"/>
+          <TextObject Name="Memo30" Width="83.16" Height="15.12" ShiftMode="Never" Text="Concepto" Padding="0, 2, 1, 1" Font="Courier New, 8pt, style=Bold"/>
+          <TextObject Name="Memo36" Left="627.48" Width="109.62" Height="15.12" ShiftMode="Never" Text="Valor Total" Padding="0, 2, 1, 1" HorzAlign="Right" Font="Courier New, 8pt, style=Bold"/>
+          <TextObject Name="Memo31" Left="83.16" Width="234.36" Height="15.12" ShiftMode="Never" Text="Descripción" Padding="0, 2, 1, 1" Font="Courier New, 8pt, style=Bold"/>
+          <TextObject Name="Memo32" Left="317.52" Width="64.26" Height="15.12" ShiftMode="Never" Text="Cant." Padding="0, 2, 1, 1" HorzAlign="Center" Font="Courier New, 8pt, style=Bold"/>
+          <TextObject Name="Memo33" Left="381.78" Width="105.84" Height="15.12" ShiftMode="Never" Text="Vr. Unitario" Padding="0, 2, 1, 1" HorzAlign="Right" Font="Courier New, 8pt, style=Bold"/>
+          <TextObject Name="Memo34" Left="487.62" Width="71.82" Height="15.12" ShiftMode="Never" Text="Desc." Padding="0, 2, 1, 1" HorzAlign="Right" Font="Courier New, 8pt, style=Bold"/>
+          <TextObject Name="Memo35" Left="559.44" Width="68.04" Height="15.12" ShiftMode="Never" Text="Iva." Padding="0, 2, 1, 1" HorzAlign="Right" Font="Courier New, 8pt, style=Bold"/>
+          <DataBand Name="MasterData1" Top="344.11" Width="740.5" Height="15.12" CanGrow="true" CanShrink="true" BeforePrintEvent="MasterData1_BeforePrint" DataSource="Table" KeepDetail="true">
+            <TextObject Name="fd2Text7" Left="627.48" Width="109.62" Height="15.12" Border.Lines="Left, Right" Border.Color="Gray" GrowToBottom="true" ShiftMode="Never" Padding="0, 2, 1, 1" Font="Courier New, 7pt"/>
+            <TextObject Name="Memo43" Left="627.48" Width="109.62" Height="15.12" GrowToBottom="true" ShiftMode="Never" Text="[ValorTotal]" Padding="0, 2, 1, 1" Format="Number" Format.UseLocale="true" HorzAlign="Right" Font="Courier New, 8pt"/>
+            <TextObject Name="fd2Text6" Left="559.44" Width="68.04" Height="15.12" Border.Lines="Left, Right" Border.Color="Gray" GrowToBottom="true" ShiftMode="Never" Padding="0, 2, 1, 1" Font="Courier New, 7pt"/>
+            <TextObject Name="Memo42" Left="559.44" Width="67.25" Height="15.12" ShiftMode="Never" Text="[Iva]" Padding="0, 2, 1, 1" Format="Number" Format.UseLocale="true" HorzAlign="Right" Font="Courier New, 8pt"/>
+            <TextObject Name="fd2Text5" Left="487.62" Width="71.82" Height="15.12" Border.Lines="Left, Right" Border.Color="Gray" GrowToBottom="true" ShiftMode="Never" Padding="0, 2, 1, 1" Font="Courier New, 7pt"/>
+            <TextObject Name="Memo41" Left="487.62" Width="71.82" Height="15.12" ShiftMode="Never" Text="[Descuento]" Padding="0, 2, 1, 1" Format="Number" Format.UseLocale="true" HorzAlign="Right" Font="Courier New, 8pt"/>
+            <TextObject Name="fd2Text4" Left="381.78" Width="105.84" Height="15.12" Border.Lines="Left, Right" Border.Color="Gray" GrowToBottom="true" ShiftMode="Never" Padding="0, 2, 1, 1" Font="Courier New, 7pt"/>
+            <TextObject Name="Memo40" Left="381.78" Width="105.84" Height="15.12" ShiftMode="Never" Text="[ValorUnitario]" Padding="0, 2, 1, 1" Format="Number" Format.UseLocale="true" HorzAlign="Right" Font="Courier New, 8pt"/>
+            <TextObject Name="fd2Text3" Left="317.52" Width="64.26" Height="15.12" Border.Lines="Left, Right" Border.Color="Gray" GrowToBottom="true" ShiftMode="Never" Padding="0, 2, 1, 1" Format="Number" Format.UseLocale="true" Font="Courier New, 7pt"/>
+            <TextObject Name="Memo39" Left="317.52" Width="64.26" Height="15.12" ShiftMode="Never" Text="[Cantidad]" Padding="0, 2, 1, 1" Format="Number" Format.UseLocale="true" HorzAlign="Right" Font="Courier New, 8pt"/>
+            <TextObject Name="fd2Text2" Left="83.16" Width="234.36" Height="15.12" Border.Lines="Left, Right" Border.Color="Gray" CanGrow="true" CanShrink="true" GrowToBottom="true" ShiftMode="Never" CanBreak="false" Padding="0, 2, 1, 1" Font="Courier New, 7pt"/>
+            <TextObject Name="Memo38" Left="83.16" Width="234.36" Height="15.12" CanGrow="true" CanShrink="true" ShiftMode="Never" CanBreak="false" Text="[Query.Deslarga_Fbo]" Padding="0, 2, 1, 1" HorzAlign="Justify" Font="Courier New, 8pt"/>
+            <TextObject Name="fd2Text1" Width="83.16" Height="15.12" Border.Lines="Left, Right" Border.Color="Gray" GrowToBottom="true" ShiftMode="Never" Padding="0, 2, 1, 1" Font="Courier New, 7pt"/>
+            <TextObject Name="Memo37" Width="83.16" Height="15.12" ShiftMode="Never" Text="[Trim([Query.Conce_Fbo])]&#13;&#10;" Padding="0, 2, 1, 1" Font="Courier New, 8pt"/>
+            <ChildBand Name="Child4" Top="375.78" Width="740.5">
+              <ChildBand Name="Child5" Top="361.46" Width="740.5" Height="12.1" BeforePrintEvent="Child5_BeforePrint" FillUnusedSpace="true">
+                <TextObject Name="Text39" Width="737.1" Height="12.1" Border.Lines="Left, Right" Border.Color="Gray" Padding="0, 2, 1, 1" Font="Courier New, 7pt"/>
+                <TextObject Name="Text34" Left="317.52" Width="64.26" Height="12.1" Border.Lines="Left, Right" Border.Color="Gray" GrowToBottom="true" Padding="0, 2, 1, 1" Format="Number" Format.UseLocale="true" Font="Courier New, 7pt"/>
+                <TextObject Name="Text35" Left="381.78" Width="105.84" Height="12.1" Border.Lines="Left, Right" Border.Color="Gray" GrowToBottom="true" Padding="0, 2, 1, 1" Font="Courier New, 7pt"/>
+                <TextObject Name="Text36" Left="487.62" Width="71.82" Height="12.1" Border.Lines="Left, Right" Border.Color="Gray" GrowToBottom="true" Padding="0, 2, 1, 1" Font="Courier New, 7pt"/>
+                <TextObject Name="Text37" Left="559.44" Width="68.04" Height="12.1" Border.Lines="Left, Right" Border.Color="Gray" GrowToBottom="true" Padding="0, 2, 1, 1" Font="Courier New, 7pt"/>
+                <TextObject Name="Text38" Left="627.48" Width="109.62" Height="12.1" Border.Lines="Left, Right" Border.Color="Gray" GrowToBottom="true" Padding="0, 2, 1, 1" Font="Courier New, 7pt"/>
+                <TextObject Name="Text33" Left="83.16" Width="234.36" Height="12.1" Border.Lines="Left, Right" Border.Color="Gray" CanGrow="true" CanShrink="true" GrowToBottom="true" CanBreak="false" Padding="0, 2, 1, 1" Font="Courier New, 7pt"/>
+                <TextObject Name="Text32" Width="83.16" Height="12.1" Border.Lines="Left, Right" Border.Color="Gray" GrowToBottom="true" Padding="0, 2, 1, 1" Font="Courier New, 7pt"/>
+              </ChildBand>
+            </ChildBand>
+          </DataBand>
+          <GroupFooterBand Name="GroupFooter2" Top="378" Width="740.5" Height="15.12" BeforePrintEvent="GroupFooter2_BeforePrint" RepeatOnEveryPage="true">
+            <TextObject Name="Text22" Width="737.1" Height="15.12" Border.Lines="Top" Border.Color="Gray" ShiftMode="Never" Padding="0, 2, 1, 1" Font="Courier New, 7pt"/>
+            <ChildBand Name="Child6" Top="398.32" Width="740.5" Height="257.04" CanShrink="true" PrintOn="None" AfterPrintEvent="Child6_AfterPrint" PrintOnBottom="true">
+              <TextObject Name="BOX5" Left="385.56" Top="15.12" Width="351.54" Height="131.54" Border.Lines="All" Border.Color="Gray" ShiftMode="Never" Padding="2, 1, 2, 1" Font="Courier New, 8pt, style=Bold"/>
+              <TextObject Name="BOX4" Top="15.12" Width="737.1" Height="131.54" Border.Lines="All" Border.Color="Gray" ShiftMode="Never" Padding="2, 1, 2, 1" Font="Courier New, 8pt, style=Bold"/>
+              <TextObject Name="Text4" Top="83.16" Width="385.56" Height="64.25" ShiftMode="Never" Text="[Query.Observ_fhe1]" Padding="2, 1, 2, 1" Font="Courier New, 8pt"/>
+              <TextObject Name="Son" Top="15.12" Width="385.56" Height="49.14" Border.Lines="Bottom" Border.Color="Gray" ShiftMode="Never" Text="Son: [MOMTOLETRAS]" Padding="2, 1, 2, 1" HorzAlign="Justify" Font="Courier New, 8pt, style=Bold"/>
+              <SubreportObject Name="Subtotales" Left="385.56" Top="15.12" Width="351.54" Height="15.9" Border.Lines="All" Fill.Color="Silver" ShiftMode="Never" ReportPage="Page4" PrintOnParent="true"/>
+              <TextObject Name="Text3" Top="64.26" Width="385.56" Height="18.9" ShiftMode="Never" Text="Observaciones: " Padding="0, 2, 1, 1" Font="Courier New, 8pt, style=Bold"/>
+              <SubreportObject Name="Cuotas" Top="173.88" Width="737.1" Height="18.9" Border.Lines="All" Fill.Color="Silver" ShiftMode="Never" ReportPage="Page5" PrintOnParent="true"/>
+              <TextObject Name="fd2Text20" Width="737.1" Height="15.12" Border.Lines="Top" Border.Color="Gray" ShiftMode="Never" Padding="0, 2, 1, 1" Font="Courier New, 7pt"/>
+              <TextObject Name="Text40" Left="385.56" Top="15.12" Width="173.88" Height="131.54" Border.Lines="Right" Border.Color="Gray" Padding="2, 1, 2, 1" Font="Courier New, 8pt, style=Bold"/>
+              <ChildBand Name="Child2" Top="395.34" Width="740.5" Height="0.76" FillUnusedSpace="true">
+                <TextObject Name="Text23" Width="737.1" Height="0.76" Border.Lines="Left, Right" Border.Color="Gray" Padding="0, 2, 1, 1" Font="Courier New, 7pt"/>
+                <TextObject Name="Text24" Width="83.16" Height="0.76" Border.Lines="Left, Right" Border.Color="Gray" GrowToBottom="true" Padding="0, 2, 1, 1" Font="Courier New, 7pt"/>
+                <TextObject Name="Text25" Left="83.16" Width="234.36" Height="0.76" Border.Lines="Left, Right" Border.Color="Gray" CanGrow="true" CanShrink="true" GrowToBottom="true" CanBreak="false" Padding="0, 2, 1, 1" Font="Courier New, 7pt"/>
+                <TextObject Name="Text26" Left="317.52" Width="64.26" Height="0.76" Border.Lines="Left, Right" Border.Color="Gray" GrowToBottom="true" Padding="0, 2, 1, 1" Format="Number" Format.UseLocale="true" Font="Courier New, 7pt"/>
+                <TextObject Name="Text27" Left="381.78" Width="105.84" Height="0.76" Border.Lines="Left, Right" Border.Color="Gray" GrowToBottom="true" Padding="0, 2, 1, 1" Font="Courier New, 7pt"/>
+                <TextObject Name="Text28" Left="487.62" Width="71.82" Height="0.76" Border.Lines="Left, Right" Border.Color="Gray" GrowToBottom="true" Padding="0, 2, 1, 1" Font="Courier New, 7pt"/>
+                <TextObject Name="Text29" Left="559.44" Width="68.04" Height="0.76" Border.Lines="Left, Right" Border.Color="Gray" GrowToBottom="true" Padding="0, 2, 1, 1" Font="Courier New, 7pt"/>
+                <TextObject Name="Text30" Left="627.48" Width="109.62" Height="0.76" Border.Lines="Left, Right" Border.Color="Gray" GrowToBottom="true" Padding="0, 2, 1, 1" Font="Courier New, 7pt"/>
+              </ChildBand>
+            </ChildBand>
+          </GroupFooterBand>
+        </GroupHeaderBand>
+        <GroupFooterBand Name="GroupFooter3" Top="657.59" Width="740.5" CanGrow="true" CanShrink="true" BeforePrintEvent="GroupFooter3_BeforePrint" PrintOnBottom="true" Guides="18.9">
+          <SubreportObject Name="Cuotas_2" Width="737.1" ShiftMode="Never" ReportPage="Page2"/>
+          <ChildBand Name="Child1" Top="659.81" Width="740.5" Visible="false" PrintOn="LastPage, OddPages, EvenPages">
+            <ChildBand Name="Child3" Top="662.03" Width="740.5" CanGrow="true" CanShrink="true" CanBreak="true"/>
+          </ChildBand>
+        </GroupFooterBand>
+      </GroupHeaderBand>
+      <GroupFooterBand Name="GroupFooter1" Top="664.25" Width="740.5" AfterPrintEvent="GroupFooter1_AfterPrint"/>
+    </GroupHeaderBand>
+    <PageFooterBand Name="PageFooter1" Top="666.48" Width="740.5" Height="125.82">
+      <TextObject Name="Memo57" Top="7.56" Width="737.49" Height="18.9" GrowToBottom="true" BeforePrintEvent="Memo57_BeforePrint" Text="[PObservaciones]" Padding="2, 1, 2, 1" Font="Courier New, 6pt"/>
+      <TextObject Name="Memo58" Left="3.55" Top="41.02" Width="177.29" Height="18.9" Text="[Usuario_Fhe]" Padding="2, 1, 2, 1" HorzAlign="Center" Font="Courier New, 10pt"/>
+      <LineObject Name="Line20" Left="5" Top="65.02" Width="171"/>
+      <LineObject Name="Line21" Left="282" Top="65.02" Width="171"/>
+      <LineObject Name="Line22" Left="522" Top="65.02" Width="212"/>
+      <TextObject Name="Memo59" Left="11" Top="68.24" Width="163.49" Height="11.34" Text="Elaboró" Padding="2, 1, 2, 1" HorzAlign="Center" Font="Courier New, 7pt"/>
+      <TextObject Name="Memo60" Left="315" Top="68.24" Width="107.49" Height="11.34" Text="Firma Autorizada" Padding="2, 1, 2, 1" HorzAlign="Center" Font="Courier New, 7pt"/>
+      <TextObject Name="Memo61" Left="543" Top="68.24" Width="169.49" Height="11.34" Text="ACEPTADA - CLIENTE" Padding="2, 1, 2, 1" HorzAlign="Center" Font="Courier New, 7pt"/>
+      <TextObject Name="Memo62" Left="528" Top="88.02" Width="199.49" Height="37.8" Text="Nombre, C.C y Sello de quien recibe&#13;&#10;Fecha de recibo:" Padding="2, 1, 2, 1" Font="Courier New, 7pt"/>
+      <LineObject Name="Line23" Left="630" Top="120.02" Width="104"/>
+      <TextObject Name="Text9" Top="103.95" Width="418.64" Height="20.79" Text="[Leyenda]" Padding="2, 1, 2, 1" Font="Courier New, 8pt, style=Bold"/>
+    </PageFooterBand>
+    <OverlayBand Name="Formato" Top="794.52" Width="740.5"/>
+  </ReportPage>
+  <ReportPage Name="Page4" PaperWidth="215.9" PaperHeight="279.4">
+    <DataBand Name="MasterData2" Width="740.5" Height="18.9" BeforePrintEvent="MasterData2_BeforePrint" DataSource="Table3">
+      <TextObject Name="Memo47" Width="173.88" Height="18.9" Border.Lines="Bottom" Border.Color="Gray" Text="[Query3.Totalizador]" Padding="2, 1, 2, 1" VertAlign="Center" Font="Courier New, 8pt, style=Bold"/>
+      <TextObject Name="Memo48" Left="173.75" Width="177.66" Height="18.9" Border.Lines="Bottom" Border.Color="Gray" Text="[Query3.ValorTotalizador]" Padding="2, 1, 2, 1" Format="Number" Format.UseLocale="true" HorzAlign="Right" VertAlign="Center" Font="Courier New, 8pt, style=Bold"/>
+      <DataFooterBand Name="Footer1" Top="22.9" Width="740.5" Height="18.9" AfterPrintEvent="Footer1_AfterPrint">
+        <TextObject Name="SysMemo1" Left="173.75" Width="177.66" Height="18.9" Text="[Abs(Subtotal)]" Padding="2, 1, 2, 1" Format="Number" Format.UseLocale="true" HorzAlign="Right" Font="Courier New, 8pt, style=Bold"/>
+        <TextObject Name="Memo49" Width="173.88" Height="18.9" Text="Valor a Pagar:" Padding="2, 1, 2, 1" Font="Courier New, 8pt, style=Bold"/>
+      </DataFooterBand>
+    </DataBand>
+  </ReportPage>
+  <ReportPage Name="Page5" PaperWidth="215.9" PaperHeight="279.4" RawPaperSize="1" TopMargin="0" FirstPageSource="15" OtherPagesSource="15">
+    <DataBand Name="MasterData3" Top="34.24" Width="740.5" Height="15.12" BeforePrintEvent="MasterData3_BeforePrint" CanBreak="true" DataSource="Table4">
+      <TextObject Name="fd2Text16" Width="737.1" Height="15.12" Border.Lines="All" Border.Color="Gray" ShiftMode="Never" Padding="0, 2, 1, 1" Font="Courier New, 8pt"/>
+      <TextObject Name="Memo54" Width="94.5" Height="15.12" ShiftMode="Never" Text="[Ncuotas]" Padding="0, 2, 1, 1" HorzAlign="Center" Font="Courier New, 8pt"/>
+      <TextObject Name="Memo55" Left="94.5" Width="340.2" Height="15.12" ShiftMode="Never" BeforePrintEvent="Memo55_BeforePrint" Text="[Vencimiento]" Padding="0, 2, 1, 1" Font="Courier New, 8pt"/>
+      <TextObject Name="Memo56" Left="585.9" Width="151.2" Height="15.12" ShiftMode="Never" Text="[Valor]" Padding="0, 2, 1, 1" Format="Number" Format.UseLocale="true" HorzAlign="Right" Font="Courier New, 8pt"/>
+      <TextObject Name="Text7" Left="434.7" Width="151.2" Height="15.12" ShiftMode="Never" Text="[VrCuota]" Padding="0, 2, 1, 1" Format="Number" Format.UseLocale="true" HorzAlign="Right" Font="Courier New, 8pt"/>
+      <DataHeaderBand Name="DataHeader1" Width="740.5" Height="30.24" RepeatOnEveryPage="true">
+        <TextObject Name="Text5" Top="15.12" Width="737.1" Height="15.12" Border.Lines="All" Border.Color="Gray" Fill.Color="Silver" ShiftMode="Never" Padding="2, 1, 2, 1" Font="Courier New, 8pt, style=Bold"/>
+        <TextObject Name="Memo51" Top="15.12" Width="94.49" Height="15.12" ShiftMode="Never" Text="No. Cuota" Padding="2, 1, 2, 1" HorzAlign="Center" Font="Courier New, 8pt, style=Bold"/>
+        <TextObject Name="Memo52" Left="94.5" Top="15.12" Width="340.2" Height="15.12" ShiftMode="Never" BeforePrintEvent="Memo52_BeforePrint" Text="Fecha de Vencimiento" Padding="2, 1, 2, 1" Font="Courier New, 8pt, style=Bold"/>
+        <TextObject Name="Memo53" Left="585.9" Top="15.12" Width="151.2" Height="15.12" ShiftMode="Never" Text="[LabelTotalCuota]" Padding="2, 1, 2, 1" HorzAlign="Right" Font="Courier New, 8pt, style=Bold"/>
+        <TextObject Name="Text6" Left="434.7" Top="15.12" Width="151.2" Height="15.12" ShiftMode="Never" Text="[LabelCuota]" Padding="2, 1, 2, 1" HorzAlign="Right" Font="Courier New, 8pt, style=Bold"/>
+        <TextObject Name="Text10" Width="737.1" Height="15.12" Border.Lines="All" Border.Color="Gray" Fill.Color="Silver" ShiftMode="Never" Text="Forma de Pago: [FormadePago] " Padding="2, 1, 2, 1" Font="Courier New, 8pt, style=Bold"/>
+      </DataHeaderBand>
+    </DataBand>
+  </ReportPage>
+  <ReportPage Name="Page2" PaperWidth="215.9" PaperHeight="279.4" RawPaperSize="1" FirstPageSource="15" OtherPagesSource="15">
+    <DataBand Name="Data1" Top="34.24" Width="740.5" Height="15.12" DataSource="Table2">
+      <TextObject Name="fd2Text21" Width="737.1" Height="15.12" Border.Lines="All" Border.Color="Gray" ShiftMode="Never" Padding="0, 2, 1, 1" Font="Courier New, 8pt"/>
+      <TextObject Name="Text17" Width="94.5" Height="15.12" ShiftMode="Never" Text="[Ncuotas2]" Padding="0, 2, 1, 1" HorzAlign="Center" Font="Courier New, 8pt"/>
+      <TextObject Name="Text18" Left="94.5" Width="340.2" Height="15.12" ShiftMode="Never" BeforePrintEvent="Text18_BeforePrint" Text="[Vencimiento2]" Padding="0, 2, 1, 1" Font="Courier New, 8pt"/>
+      <TextObject Name="Text19" Left="585.9" Width="151.2" Height="15.12" ShiftMode="Never" Text="[Valor2]" Padding="0, 2, 1, 1" Format="Number" Format.UseLocale="true" HorzAlign="Right" Font="Courier New, 8pt"/>
+      <TextObject Name="Text20" Left="434.7" Width="151.2" Height="15.12" ShiftMode="Never" Text="[VrCuota2]" Padding="0, 2, 1, 1" Format="Number" Format.UseLocale="true" HorzAlign="Right" Font="Courier New, 8pt"/>
+      <DataHeaderBand Name="DataHeader2" Width="740.5" Height="30.24" RepeatOnEveryPage="true">
+        <TextObject Name="Text16" Top="15.12" Width="737.1" Height="15.12" Border.Lines="All" Border.Color="Gray" Fill.Color="Silver" ShiftMode="Never" Padding="2, 1, 2, 1" Font="Courier New, 8pt, style=Bold"/>
+        <TextObject Name="Text11" Top="15.12" Width="94.49" Height="15.12" ShiftMode="Never" Text="No. Cuota" Padding="2, 1, 2, 1" HorzAlign="Center" Font="Courier New, 8pt, style=Bold"/>
+        <TextObject Name="Text12" Left="94.5" Top="15.12" Width="340.2" Height="15.12" ShiftMode="Never" BeforePrintEvent="Text12_BeforePrint" Text="Fecha de Vencimiento" Padding="2, 1, 2, 1" Font="Courier New, 8pt, style=Bold"/>
+        <TextObject Name="Text13" Left="585.9" Top="15.12" Width="151.2" Height="15.12" ShiftMode="Never" Text="[LabelTotalCuota]" Padding="2, 1, 2, 1" HorzAlign="Right" Font="Courier New, 8pt, style=Bold"/>
+        <TextObject Name="Text14" Left="434.7" Top="15.12" Width="151.2" Height="15.12" ShiftMode="Never" Text="[LabelCuota]" Padding="2, 1, 2, 1" HorzAlign="Right" Font="Courier New, 8pt, style=Bold"/>
+        <TextObject Name="Text15" Width="737.1" Height="15.12" Border.Lines="All" Border.Color="Gray" Fill.Color="Silver" ShiftMode="Never" Text="Forma de Pago: [FormadePago] " Padding="2, 1, 2, 1" Font="Courier New, 8pt, style=Bold"/>
+      </DataHeaderBand>
+    </DataBand>
+  </ReportPage>
+</Report>
